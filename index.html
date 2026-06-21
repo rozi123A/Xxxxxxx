@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlotFruits - لعبة الفواكه</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: #333;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .slot-machine {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            background: #000;
+            padding: 20px;
+            border-radius: 10px;
+            border: 5px solid #ffd700;
+        }
+        .reel {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            overflow: hidden;
+        }
+        button {
+            background: #ffd700;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .balance {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+        .message {
+            height: 30px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SlotFruits</h1>
+        <div class="balance">الرصيد: <span id="balance">1000</span> نقطة</div>
+        <div class="slot-machine">
+            <div class="reel" id="reel1">🍎</div>
+            <div class="reel" id="reel2">🍇</div>
+            <div class="reel" id="reel3">🍒</div>
+        </div>
+        <button onclick="spin()">دوران!</button>
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        const fruits = ['🍎', '🍇', '🍒', '🍋', '🍉', '💎'];
+        let balance = 1000;
+
+        function spin() {
+            if (balance < 10) {
+                document.getElementById('message').innerText = 'رصيدك غير كافٍ!';
+                return;
+            }
+
+            balance -= 10;
+            updateUI();
+            
+            document.getElementById('message').innerText = 'جاري الدوران...';
+            
+            let count = 0;
+            const interval = setInterval(() => {
+                document.getElementById('reel1').innerText = fruits[Math.floor(Math.random() * fruits.length)];
+                document.getElementById('reel2').innerText = fruits[Math.floor(Math.random() * fruits.length)];
+                document.getElementById('reel3').innerText = fruits[Math.floor(Math.random() * fruits.length)];
+                count++;
+                
+                if (count > 20) {
+                    clearInterval(interval);
+                    checkWin();
+                }
+            }, 50);
+        }
+
+        function checkWin() {
+            const r1 = document.getElementById('reel1').innerText;
+            const r2 = document.getElementById('reel2').innerText;
+            const r3 = document.getElementById('reel3').innerText;
+
+            if (r1 === r2 && r2 === r3) {
+                let win = 100;
+                if (r1 === '💎') win = 500;
+                balance += win;
+                document.getElementById('message').innerText = `مبروك! لقد ربحت ${win} نقطة! 🎉`;
+                document.getElementById('message').style.color = '#ffd700';
+            } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+                balance += 20;
+                document.getElementById('message').innerText = 'ربح بسيط! +20 نقطة';
+                document.getElementById('message').style.color = '#4caf50';
+            } else {
+                document.getElementById('message').innerText = 'حظاً موفقاً في المرة القادمة!';
+                document.getElementById('message').style.color = '#ff4444';
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('balance').innerText = balance;
+        }
+    </script>
+</body>
+</html>
