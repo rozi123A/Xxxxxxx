@@ -7,10 +7,22 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg: #000000;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --green: #39d353;
+      --green-dim: rgba(57,211,83,0.18);
+      --gold: #f5a623;
+      --text: #ffffff;
+      --text-dim: #777;
+      --border: #2a2a2a;
+    }
+
     body {
-      background: #0a0a0a;
-      color: #fff;
-      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -18,484 +30,452 @@
 
     .app {
       width: 100%;
-      max-width: 420px;
+      max-width: 430px;
       min-height: 100vh;
-      background: #0a0a0a;
+      background: var(--bg);
       position: relative;
-      overflow: hidden;
     }
 
     /* ====== PAGES ====== */
-    .page { display: none; flex-direction: column; min-height: 100vh; padding: 0 0 30px; }
+    .page { display: none; flex-direction: column; min-height: 100vh; padding-bottom: 40px; }
     .page.active { display: flex; }
 
-    /* ====== TOP NAV BAR ====== */
+    /* ====== TOP NAV ====== */
     .top-nav {
       display: flex;
       justify-content: space-around;
-      padding: 14px 10px;
-      background: #111;
-      border-bottom: 1px solid #222;
+      align-items: center;
+      padding: 14px 8px;
+      background: var(--bg);
     }
 
     .nav-btn {
-      width: 44px; height: 44px;
+      width: 46px; height: 46px;
       border-radius: 50%;
-      background: #1e1e1e;
+      background: var(--surface);
       border: none;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      color: #aaa;
-      font-size: 18px;
-      transition: background 0.2s, color 0.2s;
+      color: #bbb;
+      font-size: 17px;
+      transition: all 0.2s;
     }
-    .nav-btn:hover { background: #2a2a2a; color: #fff; }
-    .nav-btn.active-nav { background: #1a3a1a; color: #22c55e; }
+    .nav-btn:hover { background: var(--surface2); color: #fff; }
+    .nav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
 
     /* ====== BACK HEADER ====== */
     .back-header {
       display: flex;
       align-items: center;
-      padding: 16px 16px;
-      gap: 12px;
-      background: #0a0a0a;
+      padding: 18px 16px 10px;
+      gap: 14px;
     }
     .back-btn {
       background: none; border: none; color: #fff;
-      font-size: 22px; cursor: pointer; padding: 4px;
+      font-size: 24px; cursor: pointer; line-height: 1;
     }
-    .back-header h2 { font-size: 20px; font-weight: bold; }
+    .back-header h2 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
 
-    /* ====== BALANCE ROW ====== */
+    /* ====== BALANCE ====== */
     .balance-row {
       display: flex;
       justify-content: space-between;
-      padding: 10px 24px 20px;
+      padding: 14px 28px 22px;
     }
-    .balance-box {
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-    }
+    .balance-box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .balance-icon {
-      width: 48px; height: 48px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
     }
-    .coins-icon { background: #2a1f00; }
-    .spins-icon { background: #0a1a3a; }
-    .balance-value { font-size: 28px; font-weight: bold; }
-    .balance-value.gold { color: #f59e0b; }
-    .balance-value.white { color: #fff; }
-    .balance-label { font-size: 10px; color: #666; letter-spacing: 1px; }
+    .coins-icon { background: #2a1a00; }
+    .spins-icon { background: #0a1030; }
+    .balance-value { font-size: 30px; font-weight: 800; line-height: 1; }
+    .balance-value.gold { color: var(--gold); }
+    .balance-label { font-size: 10px; color: var(--text-dim); letter-spacing: 1.5px; font-weight: 600; }
 
     /* ====== SLOT GRID ====== */
     .slot-wrapper {
-      padding: 0 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
+      padding: 0 18px;
+      display: flex; flex-direction: column; align-items: center; gap: 22px;
     }
 
     .slot-grid {
       width: 100%;
-      background: #111;
-      border-radius: 16px;
-      padding: 16px;
+      background: #0d0d0d;
+      border-radius: 18px;
+      padding: 14px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      border: 2px solid #22c55e;
-      box-shadow: 0 0 20px rgba(34,197,94,0.15);
+      border: 2.5px solid var(--green);
+      box-shadow: 0 0 0 1px rgba(57,211,83,0.1), 0 0 30px rgba(57,211,83,0.12), inset 0 0 20px rgba(0,0,0,0.6);
     }
 
     .slot-cell {
       aspect-ratio: 1;
-      background: #1a1a1a;
+      background: #141414;
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-      transition: transform 0.1s;
-      border: 1px solid #222;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 38px;
+      border: 1.5px solid #222;
+      transition: all 0.1s;
+      user-select: none;
     }
-
-    .slot-cell.spinning { animation: cellSpin 0.1s infinite; }
-    .slot-cell.win { animation: winPulse 0.5s ease-in-out; border-color: #22c55e; background: #0d2a1a; }
-
-    @keyframes cellSpin {
-      0% { transform: scale(0.9); opacity: 0.7; }
-      100% { transform: scale(1); opacity: 1; }
+    .slot-cell.win {
+      background: #0a2010;
+      border-color: var(--green);
+      box-shadow: 0 0 12px rgba(57,211,83,0.4);
+      animation: winFlash 0.5s ease-in-out;
     }
-    @keyframes winPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
+    @keyframes winFlash {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+    .slot-cell.rolling { animation: roll 0.08s infinite alternate; }
+    @keyframes roll {
+      from { transform: scaleY(0.85); opacity: 0.7; }
+      to { transform: scaleY(1); opacity: 1; }
     }
 
     /* ====== SPIN BUTTON ====== */
     .spin-btn {
-      width: 100px; height: 100px;
+      width: 108px; height: 108px;
       border-radius: 50%;
-      background: #0a0a0a;
-      border: 3px solid #22c55e;
+      background: #000;
+      border: 3px solid var(--green);
       color: #fff;
-      font-size: 16px;
-      font-weight: bold;
-      letter-spacing: 2px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 3px;
       cursor: pointer;
-      box-shadow: 0 0 20px rgba(34,197,94,0.3);
+      box-shadow: 0 0 0 1px rgba(57,211,83,0.2), 0 0 24px rgba(57,211,83,0.3);
       transition: all 0.15s;
       display: flex; align-items: center; justify-content: center;
     }
-    .spin-btn:active { transform: scale(0.95); }
-    .spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .spin-btn.spinning-btn {
-      animation: spinPulse 0.3s infinite alternate;
-      border-color: #f59e0b;
-      box-shadow: 0 0 20px rgba(245,158,11,0.4);
+    .spin-btn:active:not(:disabled) { transform: scale(0.94); }
+    .spin-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .spin-btn.going {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 1px rgba(245,166,35,0.2), 0 0 24px rgba(245,166,35,0.35);
+      animation: pulse 0.4s infinite alternate;
     }
-    @keyframes spinPulse {
-      from { box-shadow: 0 0 15px rgba(34,197,94,0.3); }
-      to { box-shadow: 0 0 30px rgba(34,197,94,0.7); }
+    @keyframes pulse {
+      from { box-shadow: 0 0 16px rgba(57,211,83,0.3); }
+      to   { box-shadow: 0 0 34px rgba(57,211,83,0.7); }
     }
 
     /* ====== WIN MESSAGE ====== */
-    .win-message {
-      min-height: 36px;
+    .win-msg {
+      min-height: 38px;
       text-align: center;
       font-size: 15px;
-      font-weight: bold;
-      color: #22c55e;
-      padding: 8px 20px;
+      font-weight: 700;
+      padding: 8px 16px;
+      color: var(--green);
+      border-radius: 20px;
       transition: opacity 0.3s;
     }
-    .win-message.lose { color: #ef4444; }
+    .win-msg.lose { color: #e74c3c; }
 
     /* ====== CARD LIST ====== */
-    .card-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+    .card-list { padding: 6px 14px; display: flex; flex-direction: column; gap: 10px; }
 
     .card-row {
-      background: #1a1a1a;
+      background: var(--surface);
       border-radius: 14px;
-      padding: 16px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border: 1px solid #222;
+      padding: 17px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      border: 1px solid var(--border);
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.15s;
     }
-    .card-row:hover { background: #222; }
-
-    .card-row-left { display: flex; align-items: center; gap: 12px; font-size: 15px; }
-    .card-row-icon { font-size: 20px; }
+    .card-row:hover { background: var(--surface2); }
+    .card-row-left { display: flex; align-items: center; gap: 14px; font-size: 15px; font-weight: 500; }
+    .card-icon { font-size: 19px; }
+    .card-arrow { color: #444; font-size: 16px; }
 
     /* ====== TOGGLE ====== */
     .toggle {
-      width: 48px; height: 26px;
-      background: #22c55e;
+      width: 50px; height: 28px;
+      background: var(--green);
       border-radius: 20px;
       position: relative;
       cursor: pointer;
       border: none;
-      transition: background 0.2s;
+      transition: background 0.25s;
       flex-shrink: 0;
     }
-    .toggle.off { background: #444; }
+    .toggle.off { background: #333; }
     .toggle::after {
       content: '';
       position: absolute;
-      width: 20px; height: 20px;
+      width: 22px; height: 22px;
       background: #fff;
       border-radius: 50%;
       top: 3px; left: 25px;
-      transition: left 0.2s;
+      transition: left 0.25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
     }
     .toggle.off::after { left: 3px; }
 
     /* ====== STAT CARDS ====== */
     .stat-card {
-      background: #1a1a1a;
+      background: var(--surface);
       border-radius: 14px;
-      padding: 18px;
-      border: 1px solid #222;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 6px;
+      padding: 18px 20px;
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
     }
-    .stat-label { font-size: 12px; color: #666; }
-    .stat-value { font-size: 26px; font-weight: bold; }
+    .stat-label { font-size: 12px; color: var(--text-dim); font-weight: 500; }
+    .stat-value { font-size: 28px; font-weight: 800; }
 
     .copy-row {
-      background: #1a1a1a;
+      background: var(--surface);
       border-radius: 14px;
       padding: 14px 16px;
-      border: 1px solid #222;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
-    .copy-row-label { font-size: 11px; color: #666; margin-bottom: 4px; }
-    .copy-row-value { font-size: 13px; color: #fff; word-break: break-all; }
+    .copy-row-label { font-size: 11px; color: var(--text-dim); margin-bottom: 5px; font-weight: 500; }
+    .copy-row-value { font-size: 13px; color: #ddd; word-break: break-all; line-height: 1.4; }
     .copy-btn {
       background: none; border: none;
-      color: #22c55e; font-size: 20px;
+      color: #4a9eff; font-size: 22px;
       cursor: pointer; flex-shrink: 0; padding: 4px;
     }
-    .copy-btn:active { transform: scale(0.9); }
+    .copy-btn:active { transform: scale(0.85); }
 
-    /* ====== INPUT ====== */
+    /* ====== FORM INPUTS ====== */
+    .form-section { padding: 8px 14px; display: flex; flex-direction: column; gap: 10px; }
+
     .input-wrap {
-      background: #1a1a1a;
-      border-radius: 12px;
-      border: 1px solid #333;
-      display: flex;
-      align-items: center;
-      padding: 0 14px;
-      gap: 10px;
+      background: var(--surface);
+      border-radius: 13px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 16px; gap: 10px;
     }
+    .input-wrap:focus-within { border-color: #444; }
     .input-wrap input {
       background: none; border: none; outline: none;
       color: #fff; font-size: 15px;
-      padding: 14px 0;
-      flex: 1;
+      padding: 15px 0; flex: 1;
     }
-    .input-wrap input::placeholder { color: #555; }
-    .input-icon { color: #555; font-size: 18px; }
+    .input-wrap input::placeholder { color: #444; }
+    .input-icon { color: #444; font-size: 18px; }
 
-    /* ====== GREEN BUTTON ====== */
-    .green-btn {
-      background: #22c55e;
-      border: none;
-      border-radius: 14px;
-      color: #000;
-      font-size: 16px;
-      font-weight: bold;
-      padding: 16px;
-      width: 100%;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .green-btn:active { transform: scale(0.98); }
-    .green-btn:hover { background: #16a34a; }
-    .green-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ====== SELECT ====== */
     .select-wrap {
-      background: #1a1a1a;
-      border-radius: 12px;
-      border: 1px solid #333;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
+      background: var(--surface);
+      border-radius: 13px;
+      border: 1px solid var(--border);
+      padding: 15px 16px;
+      display: flex; align-items: center;
       position: relative;
     }
     .select-wrap select {
       background: none; border: none; outline: none;
-      color: #fff; font-size: 15px;
-      width: 100%; cursor: pointer;
-      appearance: none;
+      color: #fff; font-size: 15px; width: 100%;
+      cursor: pointer; appearance: none;
     }
-    .select-arrow { color: #555; pointer-events: none; }
+    .select-wrap select option { background: #1a1a1a; }
+    .sel-arrow { color: #555; pointer-events: none; flex-shrink: 0; }
 
-    /* ====== WITHDRAWAL LIST ====== */
-    .withdrawal-item {
-      background: #1a1a1a;
-      border-radius: 12px;
-      padding: 14px 16px;
-      border: 1px solid #222;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* ====== GREEN BUTTON ====== */
+    .green-btn {
+      background: var(--green);
+      border: none; border-radius: 14px;
+      color: #000; font-size: 16px; font-weight: 800;
+      padding: 17px; width: 100%;
+      cursor: pointer; transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .withdrawal-left { display: flex; flex-direction: column; gap: 4px; }
-    .withdrawal-amount { font-size: 14px; font-weight: bold; color: #f59e0b; }
-    .withdrawal-coins { font-size: 12px; color: #888; }
-    .withdrawal-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-    .withdrawal-status { font-size: 12px; color: #22c55e; font-weight: bold; }
-    .withdrawal-date { font-size: 11px; color: #555; }
+    .green-btn:hover { background: #2ec246; }
+    .green-btn:active { transform: scale(0.98); }
+    .green-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* ====== MAX BTN ====== */
-    .amount-row { display: flex; gap: 10px; align-items: stretch; }
+    /* ====== MAX BUTTON ====== */
+    .amount-row { display: flex; gap: 8px; align-items: stretch; }
     .max-btn {
-      background: #22c55e;
-      border: none;
-      border-radius: 12px;
-      color: #000;
-      font-weight: bold;
-      font-size: 14px;
-      padding: 0 18px;
-      cursor: pointer;
-      flex-shrink: 0;
+      background: #1a4a2a; border: 1.5px solid var(--green);
+      border-radius: 13px; color: #fff; font-weight: 700; font-size: 14px;
+      padding: 0 18px; cursor: pointer; flex-shrink: 0;
+      transition: background 0.15s;
     }
+    .max-btn:hover { background: #1f5a32; }
 
-    /* ====== RECEIVE ROW ====== */
+    /* ====== RECEIVE DISPLAY ====== */
     .receive-row {
-      padding: 10px 16px;
-      font-size: 14px;
-      color: #22c55e;
-      font-weight: bold;
-    }
-
-    /* ====== SUPPORT ====== */
-    .support-text {
-      padding: 20px 24px;
-      line-height: 1.8;
-      color: #aaa;
-      font-size: 14px;
-      text-align: center;
-    }
-    .support-email {
-      color: #22c55e;
-      font-weight: bold;
-      text-decoration: none;
+      padding: 6px 4px;
+      font-size: 15px; color: var(--green); font-weight: 700;
     }
 
     /* ====== SECTION TITLE ====== */
     .section-title {
-      font-size: 16px;
-      font-weight: bold;
-      padding: 16px 16px 8px;
-      color: #ccc;
+      font-size: 16px; font-weight: 700; padding: 14px 4px 6px; color: #ccc;
     }
+
+    /* ====== WITHDRAWAL ITEM ====== */
+    .w-item {
+      background: var(--surface);
+      border-radius: 12px; padding: 14px 16px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .w-item-left { display: flex; align-items: center; gap: 10px; }
+    .w-item-dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #1a2a1a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+    }
+    .w-item-amt { font-size: 14px; font-weight: 700; }
+    .w-item-coins { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .w-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+    .w-item-status { font-size: 12px; color: var(--green); font-weight: 700; }
+    .w-item-date { font-size: 11px; color: #555; }
+
+    /* ====== REFERRAL PAGE ====== */
+    .ref-hero { text-align: center; padding: 30px 20px 10px; font-size: 52px; }
+    .ref-title { font-size: 22px; font-weight: 800; text-align: center; padding: 0 24px; }
+    .ref-sub {
+      text-align: center; padding: 14px 24px;
+      font-size: 14px; color: #888; line-height: 1.75;
+    }
+    .ref-sub span { color: var(--green); font-weight: 700; }
+
+    /* ====== SUPPORT ====== */
+    .support-body {
+      padding: 20px 24px;
+      font-size: 14px; color: #888; line-height: 1.9; text-align: center;
+    }
+    .support-email { color: var(--green); font-weight: 700; text-decoration: none; }
 
     /* ====== TOAST ====== */
     #toast {
-      position: fixed;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: #1a1a1a;
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 30px;
-      font-size: 14px;
+      position: fixed; bottom: 44px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: #1e1e1e; color: #fff;
+      padding: 12px 26px; border-radius: 30px;
+      font-size: 14px; font-weight: 600;
       border: 1px solid #333;
-      opacity: 0;
-      transition: all 0.3s;
-      z-index: 999;
-      white-space: nowrap;
-      pointer-events: none;
+      opacity: 0; transition: all 0.28s;
+      z-index: 9999; white-space: nowrap; pointer-events: none;
     }
-    #toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* ====== CONFETTI ====== */
-    .confetti-piece {
-      position: fixed;
-      width: 10px; height: 10px;
-      border-radius: 2px;
-      animation: confettiFall 1s ease-in forwards;
-      pointer-events: none;
-      z-index: 998;
+    .c-piece {
+      position: fixed; border-radius: 3px;
+      animation: cFall 1s ease-in forwards;
+      pointer-events: none; z-index: 9998;
     }
-    @keyframes confettiFall {
-      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    @keyframes cFall {
+      0%   { transform: translateY(-20px) rotate(0deg);   opacity: 1; }
       100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
     }
 
-    /* Referral code entry page */
-    .ref-icon { font-size: 50px; text-align: center; padding: 30px 0 10px; }
-    .ref-title { font-size: 22px; font-weight: bold; text-align: center; padding: 0 24px; }
-    .ref-subtitle {
-      text-align: center; padding: 14px 24px;
-      font-size: 14px; color: #888; line-height: 1.7;
-    }
-    .ref-subtitle span { color: #22c55e; font-weight: bold; }
-    .form-section { padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
+    /* ====== FEEDBACK MSG ====== */
+    .feedback { min-height: 22px; text-align: center; font-size: 13px; font-weight: 600; }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- ===== PAGE: GAME ===== -->
+  <!-- ===== GAME PAGE ===== -->
   <div class="page active" id="page-game">
     <div class="top-nav">
-      <button class="nav-btn" onclick="logout()" title="Logout">&#10132;</button>
-      <button class="nav-btn" onclick="showPage('settings')" title="Settings">&#9881;</button>
-      <button class="nav-btn" onclick="showPage('support')" title="Support">&#127911;</button>
-      <button class="nav-btn" onclick="showPage('referrals')" title="Referrals">&#128101;</button>
-      <button class="nav-btn" onclick="showPage('withdrawal')" title="Withdraw">&#36;</button>
+      <!-- Logout -->
+      <button class="nav-btn" onclick="showToast('See you soon!')" title="Logout">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+      <!-- Settings -->
+      <button class="nav-btn" onclick="showPage('settings')" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <!-- Support -->
+      <button class="nav-btn" onclick="showPage('support')" title="Support">
+        <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      </button>
+      <!-- Referrals -->
+      <button class="nav-btn" onclick="showPage('referrals')" title="Referrals">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </button>
+      <!-- Withdraw -->
+      <button class="nav-btn" onclick="showPage('withdrawal')" title="Withdraw">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </button>
     </div>
 
     <div class="balance-row">
       <div class="balance-box">
         <div class="balance-icon coins-icon">&#128176;</div>
-        <div class="balance-value gold" id="balance-display">0</div>
+        <div class="balance-value gold" id="bal">0</div>
         <div class="balance-label">BALANCE</div>
       </div>
       <div class="balance-box">
         <div class="balance-icon spins-icon">&#127920;</div>
-        <div class="balance-value white" id="spins-display">10</div>
+        <div class="balance-value" id="spins">10</div>
         <div class="balance-label">SPINS</div>
       </div>
     </div>
 
     <div class="slot-wrapper">
-      <div class="slot-grid" id="slot-grid">
+      <div class="slot-grid">
         <div class="slot-cell" id="c0">&#127817;</div>
         <div class="slot-cell" id="c1">&#128276;</div>
         <div class="slot-cell" id="c2">&#128142;</div>
         <div class="slot-cell" id="c3">&#128142;</div>
         <div class="slot-cell" id="c4">&#128142;</div>
-        <div class="slot-cell" id="c5">&#10084;</div>
+        <div class="slot-cell" id="c5">&#10084;&#65039;</div>
         <div class="slot-cell" id="c6">&#127826;</div>
         <div class="slot-cell" id="c7">&#127819;</div>
         <div class="slot-cell" id="c8">&#127819;</div>
       </div>
 
       <button class="spin-btn" id="spin-btn" onclick="doSpin()">SPIN</button>
-
-      <div class="win-message" id="win-msg"></div>
+      <div class="win-msg" id="win-msg"></div>
     </div>
   </div>
 
-  <!-- ===== PAGE: SETTINGS ===== -->
+  <!-- ===== SETTINGS PAGE ===== -->
   <div class="page" id="page-settings">
     <div class="back-header">
       <button class="back-btn" onclick="showPage('game')">&#8592;</button>
-      <h2>&#9881; Settings</h2>
+      <h2>&#9881;&#65039; Settings</h2>
     </div>
     <div class="card-list">
       <div class="card-row" onclick="toggleSound()">
         <div class="card-row-left">
-          <span class="card-row-icon">&#128266;</span>
+          <span class="card-icon">&#128266;</span>
           <span>Sound</span>
         </div>
         <button class="toggle" id="sound-toggle"></button>
       </div>
       <div class="card-row" onclick="showPage('ref-code')">
         <div class="card-row-left">
-          <span class="card-row-icon">&#127873;</span>
+          <span class="card-icon">&#127873;</span>
           <span>Reference Code</span>
         </div>
-        <span style="color:#555">&#10095;</span>
+        <span class="card-arrow">&#10095;</span>
       </div>
       <div class="card-row" onclick="showPage('support')">
         <div class="card-row-left">
-          <span class="card-row-icon">&#10067;</span>
+          <span class="card-icon">&#10067;</span>
           <span>Support</span>
         </div>
-        <span style="color:#555">&#10095;</span>
+        <span class="card-arrow">&#10095;</span>
       </div>
     </div>
   </div>
 
-  <!-- ===== PAGE: REFERENCE CODE ===== -->
+  <!-- ===== REFERENCE CODE PAGE ===== -->
   <div class="page" id="page-ref-code">
     <div class="back-header">
       <button class="back-btn" onclick="showPage('settings')">&#8592;</button>
     </div>
-    <div class="ref-icon">&#127873;</div>
+    <div class="ref-hero">&#127873;</div>
     <div class="ref-title">Reference Code</div>
-    <div class="ref-subtitle">
+    <div class="ref-sub">
       If you were referred by a friend, enter the referral code below to get
       <span>50 free spins</span> on the game! &#127881;
     </div>
@@ -504,12 +484,12 @@
         <span class="input-icon">&#128273;</span>
         <input type="text" id="ref-input" placeholder="Enter code here" />
       </div>
-      <button class="green-btn" onclick="applyReferral()">&#127873; Send Code</button>
-      <div id="ref-msg" style="text-align:center;font-size:13px;color:#888;min-height:20px"></div>
+      <button class="green-btn" onclick="applyRef()">&#127873; Send Code</button>
+      <div class="feedback" id="ref-msg"></div>
     </div>
   </div>
 
-  <!-- ===== PAGE: REFERRALS ===== -->
+  <!-- ===== REFERRALS PAGE ===== -->
   <div class="page" id="page-referrals">
     <div class="back-header">
       <button class="back-btn" onclick="showPage('game')">&#8592;</button>
@@ -522,28 +502,26 @@
       </div>
       <div class="stat-card">
         <div class="stat-label">Total Earned</div>
-        <div class="stat-value">
-          <span id="ref-earned">0</span> &#128184;
-        </div>
+        <div class="stat-value"><span id="ref-earned">0</span> &#128184;</div>
       </div>
       <div class="copy-row">
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="copy-row-label">Your Referral Link</div>
-          <div class="copy-row-value" id="ref-link">—</div>
+          <div class="copy-row-value" id="ref-link-txt">—</div>
         </div>
-        <button class="copy-btn" onclick="copyText('ref-link')">&#128203;</button>
+        <button class="copy-btn" onclick="copyEl('ref-link-txt')">&#128203;</button>
       </div>
       <div class="copy-row">
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="copy-row-label">Your Code</div>
-          <div class="copy-row-value" id="ref-code-display">—</div>
+          <div class="copy-row-value" id="ref-code-txt">—</div>
         </div>
-        <button class="copy-btn" onclick="copyText('ref-code-display')">&#128203;</button>
+        <button class="copy-btn" onclick="copyEl('ref-code-txt')">&#128203;</button>
       </div>
     </div>
   </div>
 
-  <!-- ===== PAGE: WITHDRAWAL ===== -->
+  <!-- ===== WITHDRAWAL PAGE ===== -->
   <div class="page" id="page-withdrawal">
     <div class="back-header">
       <button class="back-btn" onclick="showPage('game')">&#8592;</button>
@@ -559,7 +537,7 @@
           <option value="TRX">TRON (TRX)</option>
           <option value="SOL">Solana (SOL)</option>
         </select>
-        <span class="select-arrow">&#9660;</span>
+        <span class="sel-arrow">&#9660;</span>
       </div>
       <div class="amount-row">
         <button class="max-btn" onclick="setMax()">MAX</button>
@@ -567,24 +545,21 @@
           <input type="number" id="w-amount" placeholder="Amount" oninput="updateReceive()" min="1" />
         </div>
       </div>
-      <div class="receive-row" id="receive-display">To Receive: 0.00000000 BTC</div>
+      <div class="receive-row" id="receive-txt">To Receive: 0.00000000 BTC</div>
       <button class="green-btn" onclick="doWithdraw()">Withdraw</button>
-      <div id="w-msg" style="text-align:center;font-size:13px;color:#888;min-height:20px"></div>
-
+      <div class="feedback" id="w-msg"></div>
       <div class="section-title">Latest Withdrawals</div>
-      <div id="withdrawal-list" style="display:flex;flex-direction:column;gap:8px">
-        <div style="text-align:center;color:#555;padding:20px;font-size:13px">No withdrawals yet</div>
-      </div>
+      <div id="w-list"></div>
     </div>
   </div>
 
-  <!-- ===== PAGE: SUPPORT ===== -->
+  <!-- ===== SUPPORT PAGE ===== -->
   <div class="page" id="page-support">
     <div class="back-header">
       <button class="back-btn" onclick="showPage('game')">&#8592;</button>
       <h2>Support</h2>
     </div>
-    <div class="support-text">
+    <div class="support-body">
       <p>If you have any questions, please contact us.<br>
       We accept suggestions to better serve you,<br>
       and we will respond as soon as possible.</p>
@@ -593,303 +568,264 @@
       <br>
       <p>Your messages will be replied within 48 hours.</p>
       <br>
-      <p>At the moment, we can provide only English support. Messages sent in other languages will not be replied.</p>
+      <p>At the moment, we can provide only English support.<br>Messages sent in other languages will not be replied.</p>
       <br>
-      <p>Please try to explain the issues you're experiencing as clearly and detailed as possible. Avoid short or vague messages.</p>
+      <p>Please explain your issue clearly and in detail.<br>Avoid short or vague messages.</p>
       <br>
-      <p>We do not answer questions that have already been addressed in our FAQ.</p>
+      <p>We do not answer questions already addressed in our FAQ.</p>
     </div>
   </div>
 
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
-  // ====== STATE ======
-  const SYMBOLS = ['🍉','🔔','💎','❤️','🍒','🍋','🍇','⭐','🎯'];
+  // ======== DATA ========
+  const SYM = ['🍉','🔔','💎','❤️','🍒','🍋','🍇','⭐','🎯'];
   const RATES = { BTC: 0.000000025, TRX: 0.001, SOL: 0.00005 };
-  const WIN_COMBOS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  const COIN_REWARDS = { '💎':500,'⭐':300,'🎯':250,'🔔':200,'❤️':150,'🍉':100,'🍒':80,'🍋':60,'🍇':50 };
+  const COMBOS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const REWARDS = {'💎':500,'⭐':300,'🎯':250,'🔔':200,'❤️':150,'🍉':100,'🍒':80,'🍋':60,'🍇':50};
+  const CONFETTI_COLORS = ['#39d353','#f5a623','#3b82f6','#ec4899','#a855f7','#f97316'];
 
-  let state = JSON.parse(localStorage.getItem('slotfruits') || 'null') || {
-    coins: 0,
-    spins: 10,
-    totalSpins: 0,
-    totalWins: 0,
-    sound: true,
-    referralCode: generateCode(),
-    usedReferral: false,
-    referrals: 0,
-    withdrawals: []
+  let S = JSON.parse(localStorage.getItem('sf2') || 'null') || {
+    coins: 0, spins: 10, totalSpins: 0, totalWins: 0,
+    sound: true, usedRef: false, referrals: 0,
+    code: rand16(), withdrawals: []
   };
 
-  function saveState() { localStorage.setItem('slotfruits', JSON.stringify(state)); }
+  function save() { localStorage.setItem('sf2', JSON.stringify(S)); }
+  function rand16() { return (Math.random().toString(36).slice(2,10) + Math.random().toString(36).slice(2,10)).toUpperCase(); }
 
-  function generateCode() {
-    return Math.random().toString(36).substr(2,8).toUpperCase() + Math.random().toString(36).substr(2,8).toUpperCase();
-  }
-
-  // ====== UI ======
+  // ======== PAGES ========
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
-    if (name === 'game') updateGameUI();
-    if (name === 'referrals') updateReferralsUI();
-    if (name === 'withdrawal') updateWithdrawalUI();
-    if (name === 'settings') updateSettingsUI();
     window.scrollTo(0, 0);
+    if (name === 'game')       renderGame();
+    if (name === 'settings')   renderSettings();
+    if (name === 'referrals')  renderReferrals();
+    if (name === 'withdrawal') renderWithdrawal();
   }
 
-  function updateGameUI() {
-    document.getElementById('balance-display').textContent = state.coins.toLocaleString();
-    document.getElementById('spins-display').textContent = state.spins;
+  function renderGame() {
+    document.getElementById('bal').textContent = S.coins.toLocaleString();
+    document.getElementById('spins').textContent = S.spins;
   }
-
-  function updateSettingsUI() {
+  function renderSettings() {
     const t = document.getElementById('sound-toggle');
-    t.className = 'toggle' + (state.sound ? '' : ' off');
+    t.className = 'toggle' + (S.sound ? '' : ' off');
   }
-
-  function updateReferralsUI() {
-    const domain = window.location.hostname || 'slotfruits.com';
-    document.getElementById('ref-total').textContent = state.referrals;
-    document.getElementById('ref-earned').textContent = state.referrals * 50;
-    document.getElementById('ref-link').textContent = `https://${domain}/r/${state.referralCode}`;
-    document.getElementById('ref-code-display').textContent = state.referralCode;
+  function renderReferrals() {
+    const host = location.hostname || 'slotfruits.com';
+    document.getElementById('ref-total').textContent = S.referrals;
+    document.getElementById('ref-earned').textContent = S.referrals * 50;
+    document.getElementById('ref-link-txt').textContent = `https://${host}/r/${S.code}`;
+    document.getElementById('ref-code-txt').textContent = S.code;
   }
-
-  function updateWithdrawalUI() {
-    const list = document.getElementById('withdrawal-list');
-    if (state.withdrawals.length === 0) {
-      list.innerHTML = '<div style="text-align:center;color:#555;padding:20px;font-size:13px">No withdrawals yet</div>';
+  function renderWithdrawal() {
+    updateReceive();
+    const list = document.getElementById('w-list');
+    if (!S.withdrawals.length) {
+      list.innerHTML = '<p style="text-align:center;color:#444;padding:20px;font-size:13px">No withdrawals yet</p>';
       return;
     }
-    list.innerHTML = state.withdrawals.slice().reverse().map(w => `
-      <div class="withdrawal-item">
-        <div class="withdrawal-left">
-          <div class="withdrawal-amount">&#9851; ${w.amount} ${w.currency}</div>
-          <div class="withdrawal-coins">${w.coins.toLocaleString()} &#128184;</div>
+    list.innerHTML = [...S.withdrawals].reverse().map(w => `
+      <div class="w-item">
+        <div class="w-item-left">
+          <div class="w-item-dot">&#9851;&#65039;</div>
+          <div>
+            <div class="w-item-amt">${w.amt} ${w.cur}</div>
+            <div class="w-item-coins">${w.coins.toLocaleString()} &#128184;</div>
+          </div>
         </div>
-        <div class="withdrawal-right">
-          <div class="withdrawal-status">Complete</div>
-          <div class="withdrawal-date">${w.date}</div>
+        <div class="w-item-right">
+          <div class="w-item-status">Complete</div>
+          <div class="w-item-date">${w.date}</div>
         </div>
-      </div>
-    `).join('');
-    updateReceive();
+      </div>`).join('');
   }
 
-  // ====== SPIN ======
+  // ======== SPIN ========
   let spinning = false;
 
   function doSpin() {
     if (spinning) return;
-    if (state.spins <= 0) { showToast('No spins left! Apply a referral code to get more.'); return; }
+    if (S.spins <= 0) { showToast('No spins left!'); return; }
 
     spinning = true;
     const btn = document.getElementById('spin-btn');
     btn.disabled = true;
-    btn.classList.add('spinning-btn');
+    btn.classList.add('going');
     btn.textContent = '...';
 
-    state.spins--;
-    state.totalSpins++;
-    saveState();
-    updateGameUI();
+    S.spins--;
+    S.totalSpins++;
+    save();
+    renderGame();
 
-    // Animate cells
-    for (let i = 0; i < 9; i++) {
-      document.getElementById('c' + i).classList.add('spinning');
-    }
+    for (let i = 0; i < 9; i++) document.getElementById('c' + i).classList.add('rolling');
 
-    let ticks = 0;
-    const maxTicks = 20 + Math.floor(Math.random() * 10);
-    const grid = [];
+    let tick = 0;
+    const max = 22 + Math.floor(Math.random() * 10);
+    let final = [];
 
-    const interval = setInterval(() => {
+    const iv = setInterval(() => {
       for (let i = 0; i < 9; i++) {
-        const sym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-        document.getElementById('c' + i).textContent = sym;
-        if (ticks === maxTicks - 1) grid[i] = sym;
+        const s = SYM[Math.floor(Math.random() * SYM.length)];
+        document.getElementById('c' + i).textContent = s;
+        if (tick === max - 1) final[i] = s;
       }
-      ticks++;
-      if (ticks >= maxTicks) {
-        clearInterval(interval);
-        finalizeSpin(grid);
-      }
-    }, 60);
+      if (++tick >= max) { clearInterval(iv); finalize(final); }
+    }, 65);
   }
 
-  function finalizeSpin(grid) {
-    for (let i = 0; i < 9; i++) {
-      document.getElementById('c' + i).classList.remove('spinning');
-    }
+  function finalize(grid) {
+    for (let i = 0; i < 9; i++) document.getElementById('c' + i).classList.remove('rolling');
 
-    let won = false;
-    let coinsEarned = 0;
-    let msg = '';
-    let winCells = [];
-
-    for (const combo of WIN_COMBOS) {
-      const [a, b, c] = combo;
+    let won = false, earned = 0, msg = '', winIdx = [];
+    for (const [a, b, c] of COMBOS) {
       if (grid[a] && grid[a] === grid[b] && grid[b] === grid[c]) {
         won = true;
-        const reward = COIN_REWARDS[grid[a]] || 50;
-        coinsEarned += reward;
-        msg = `${grid[a]} x3 — You won ${reward} coins!`;
-        winCells = [a, b, c];
+        const r = REWARDS[grid[a]] || 50;
+        earned += r;
+        msg = `${grid[a]} x3 — You won ${r} coins!`;
+        winIdx = [a, b, c];
         break;
       }
     }
 
     if (won) {
-      state.coins += coinsEarned;
-      state.totalWins++;
-      winCells.forEach(i => document.getElementById('c' + i).classList.add('win'));
-      setTimeout(() => winCells.forEach(i => document.getElementById('c' + i).classList.remove('win')), 600);
-      showConfetti();
-      document.getElementById('win-msg').className = 'win-message';
+      S.coins += earned;
+      S.totalWins++;
+      winIdx.forEach(i => document.getElementById('c' + i).classList.add('win'));
+      setTimeout(() => winIdx.forEach(i => document.getElementById('c' + i).classList.remove('win')), 700);
+      burst();
+      document.getElementById('win-msg').className = 'win-msg';
       document.getElementById('win-msg').textContent = msg;
     } else {
-      document.getElementById('win-msg').className = 'win-message lose';
-      document.getElementById('win-msg').textContent = 'Try again!';
+      document.getElementById('win-msg').className = 'win-msg lose';
+      document.getElementById('win-msg').textContent = 'Better luck next time!';
     }
 
-    saveState();
-    updateGameUI();
+    save();
+    renderGame();
 
     setTimeout(() => {
       const btn = document.getElementById('spin-btn');
       btn.disabled = false;
-      btn.classList.remove('spinning-btn');
+      btn.classList.remove('going');
       btn.textContent = 'SPIN';
       spinning = false;
-    }, 300);
+    }, 350);
   }
 
-  // ====== SOUND ======
+  // ======== SOUND ========
   function toggleSound() {
-    state.sound = !state.sound;
-    saveState();
-    updateSettingsUI();
-    showToast(state.sound ? 'Sound On' : 'Sound Off');
+    S.sound = !S.sound;
+    save();
+    renderSettings();
+    showToast(S.sound ? 'Sound On' : 'Sound Off');
   }
 
-  // ====== REFERRAL ======
-  function applyReferral() {
+  // ======== REFERRAL ========
+  function applyRef() {
     const code = document.getElementById('ref-input').value.trim().toUpperCase();
-    const msg = document.getElementById('ref-msg');
-    if (!code) { msg.style.color='#ef4444'; msg.textContent = 'Please enter a code.'; return; }
-    if (state.usedReferral) { msg.style.color='#ef4444'; msg.textContent = 'You already used a referral code.'; return; }
-    if (code === state.referralCode) { msg.style.color='#ef4444'; msg.textContent = 'You cannot use your own code.'; return; }
+    const el = document.getElementById('ref-msg');
 
-    // Accept any valid-length code
-    if (code.length < 8) { msg.style.color='#ef4444'; msg.textContent = 'Invalid code.'; return; }
+    const fail = (t) => { el.style.color = '#e74c3c'; el.textContent = t; };
+    const ok   = (t) => { el.style.color = '#39d353'; el.textContent = t; };
 
-    state.spins += 50;
-    state.usedReferral = true;
-    saveState();
-    updateGameUI();
-    msg.style.color = '#22c55e';
-    msg.textContent = 'Code applied! You got 50 free spins!';
+    if (!code) return fail('Please enter a code.');
+    if (S.usedRef) return fail('You already used a referral code.');
+    if (code === S.code) return fail('You cannot use your own code.');
+    if (code.length < 8) return fail('Invalid code.');
+
+    S.spins += 50;
+    S.usedRef = true;
+    save();
+    renderGame();
+    ok('Code applied! +50 free spins!');
     document.getElementById('ref-input').value = '';
-    showConfetti();
-    setTimeout(() => showPage('game'), 1500);
+    burst();
+    setTimeout(() => showPage('game'), 1600);
   }
 
-  // ====== WITHDRAWAL ======
+  // ======== WITHDRAWAL ========
   function setMax() {
-    document.getElementById('w-amount').value = state.coins;
+    document.getElementById('w-amount').value = S.coins;
     updateReceive();
   }
 
   function updateReceive() {
-    const currency = document.getElementById('w-currency').value;
-    const amount = parseInt(document.getElementById('w-amount').value) || 0;
-    const rate = RATES[currency] || 0.000000025;
-    const crypto = (amount * rate).toFixed(8);
-    document.getElementById('receive-display').textContent = `To Receive: ${crypto} ${currency}`;
+    const cur = document.getElementById('w-currency')?.value || 'BTC';
+    const amt = parseInt(document.getElementById('w-amount')?.value) || 0;
+    const r = (amt * (RATES[cur] || 0.000000025)).toFixed(8);
+    document.getElementById('receive-txt').textContent = `To Receive: ${r} ${cur}`;
   }
 
   function doWithdraw() {
     const email = document.getElementById('w-email').value.trim();
-    const currency = document.getElementById('w-currency').value;
-    const amount = parseInt(document.getElementById('w-amount').value) || 0;
-    const msg = document.getElementById('w-msg');
+    const cur   = document.getElementById('w-currency').value;
+    const coins = parseInt(document.getElementById('w-amount').value) || 0;
+    const el    = document.getElementById('w-msg');
+    const fail  = (t) => { el.style.color = '#e74c3c'; el.textContent = t; };
+    const ok    = (t) => { el.style.color = '#39d353'; el.textContent = t; };
 
-    if (!email || !email.includes('@')) { msg.style.color='#ef4444'; msg.textContent = 'Enter a valid FaucetPay email.'; return; }
-    if (amount < 100) { msg.style.color='#ef4444'; msg.textContent = 'Minimum withdrawal is 100 coins.'; return; }
-    if (amount > state.coins) { msg.style.color='#ef4444'; msg.textContent = 'Insufficient coins.'; return; }
+    if (!email.includes('@')) return fail('Enter a valid FaucetPay email.');
+    if (coins < 100) return fail('Minimum withdrawal is 100 coins.');
+    if (coins > S.coins) return fail('Insufficient coins.');
 
-    const rate = RATES[currency] || 0.000000025;
-    const crypto = (amount * rate).toFixed(8);
+    const amt = (coins * (RATES[cur] || 0.000000025)).toFixed(8);
     const date = new Date().toISOString().split('T')[0];
-
-    state.coins -= amount;
-    state.withdrawals.push({ amount: crypto, currency, coins: amount, date, status: 'complete' });
-    saveState();
-    updateGameUI();
-    updateWithdrawalUI();
-
-    msg.style.color = '#22c55e';
-    msg.textContent = 'Withdrawal submitted successfully!';
+    S.coins -= coins;
+    S.withdrawals.push({ amt, cur, coins, date });
+    save();
+    renderGame();
+    renderWithdrawal();
     document.getElementById('w-amount').value = '';
-    updateReceive();
+    ok('Withdrawal submitted!');
     showToast('Withdrawal requested!');
   }
 
-  // ====== COPY ======
-  function copyText(id) {
-    const text = document.getElementById(id).textContent;
-    navigator.clipboard.writeText(text).then(() => showToast('Copied!')).catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta); showToast('Copied!');
+  // ======== COPY ========
+  function copyEl(id) {
+    const txt = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(txt).catch(() => {
+      const ta = Object.assign(document.createElement('textarea'), { value: txt });
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
     });
+    showToast('Copied!');
   }
 
-  // ====== TOAST ======
-  let toastTimer;
-  function showToast(text) {
+  // ======== TOAST ========
+  let _tt;
+  function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = text;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(_tt);
+    _tt = setTimeout(() => t.classList.remove('show'), 2200);
   }
 
-  // ====== CONFETTI ======
-  function showConfetti() {
-    const colors = ['#22c55e','#f59e0b','#3b82f6','#ef4444','#8b5cf6'];
-    for (let i = 0; i < 30; i++) {
+  // ======== CONFETTI ========
+  function burst() {
+    for (let i = 0; i < 36; i++) {
       setTimeout(() => {
-        const c = document.createElement('div');
-        c.className = 'confetti-piece';
-        c.style.cssText = `
-          left:${Math.random()*100}vw;
-          top:-10px;
-          background:${colors[Math.floor(Math.random()*colors.length)]};
-          animation-duration:${0.8+Math.random()*0.6}s;
-          animation-delay:${Math.random()*0.3}s;
-          width:${6+Math.random()*8}px;
-          height:${6+Math.random()*8}px;
-        `;
-        document.body.appendChild(c);
-        setTimeout(() => c.remove(), 1500);
-      }, i * 20);
+        const el = document.createElement('div');
+        el.className = 'c-piece';
+        const sz = 6 + Math.random() * 8;
+        el.style.cssText = `left:${Math.random()*100}vw;top:-12px;width:${sz}px;height:${sz}px;
+          background:${CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)]};
+          animation-duration:${0.8+Math.random()*0.7}s;animation-delay:${Math.random()*0.4}s;`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1600);
+      }, i * 18);
     }
   }
 
-  // ====== LOGOUT ======
-  function logout() {
-    showToast('Come back soon!');
-  }
-
-  // ====== INIT ======
-  updateGameUI();
-  updateSettingsUI();
+  // ======== INIT ========
+  renderGame();
+  renderSettings();
 </script>
 </body>
 </html>
