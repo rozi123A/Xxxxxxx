@@ -1135,19 +1135,47 @@
     document.getElementById('fp-email-input').value = '';
     document.getElementById('fp-err').textContent = '';
   }
-  function doFPLogin() {
+  async function doFPLogin() {
     const email = document.getElementById('fp-email-input').value.trim();
     const err = document.getElementById('fp-err');
+    const btn = document.querySelector('#fp-modal .green-btn');
+
     if (!email.includes('@') || !email.includes('.')) {
+      err.style.color = '#ef4444';
       err.textContent = 'Please enter a valid email address.';
       return;
     }
-    localStorage.setItem('sf2_user', JSON.stringify({ method: 'faucetpay', email }));
-    // Set FaucetPay email as the withdrawal email in S
-    S.fpEmail = email;
-    save();
-    closeFPModal();
-    showPage('game');
+
+    // Show loading state
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+    err.textContent = '';
+
+    try {
+      const res = await fetch('/api/check-faucetpay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+
+      if (data.valid) {
+        localStorage.setItem('sf2_user', JSON.stringify({ method: 'faucetpay', email }));
+        S.fpEmail = email;
+        save();
+        closeFPModal();
+        showPage('game');
+      } else {
+        err.style.color = '#ef4444';
+        err.textContent = data.message || 'No FaucetPay account found for this email.';
+      }
+    } catch(e) {
+      err.style.color = '#ef4444';
+      err.textContent = 'Connection error. Please try again.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Continue →';
+    }
   }
   function signInGoogle() {
     const email = prompt('Enter your Google email address:');
