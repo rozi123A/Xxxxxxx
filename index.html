@@ -355,6 +355,50 @@
     }
     .support-email { color: var(--green); font-weight: 700; text-decoration: none; }
 
+    /* ====== LOGOUT MODAL ====== */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 9990;
+      background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal-box {
+      width: 100%; max-width: 360px;
+      background: #111;
+      border-radius: 22px;
+      padding: 44px 28px 32px;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      transform: scale(0.92);
+      transition: transform 0.22s;
+    }
+    .modal-overlay.open .modal-box { transform: scale(1); }
+
+    .modal-icon {
+      width: 80px; height: 80px;
+      border: 3px solid #ef4444;
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 8px;
+    }
+    .modal-icon svg { width: 46px; height: 46px; }
+
+    .modal-title { font-size: 22px; font-weight: 800; text-align: center; }
+    .modal-sub   { font-size: 14px; color: #777; text-align: center; margin-bottom: 8px; }
+
+    .modal-btns { display: flex; gap: 12px; width: 100%; margin-top: 6px; }
+    .modal-btns button {
+      flex: 1; padding: 17px; border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-signout { background: #ef4444; color: #fff; }
+    .btn-signout:hover { background: #dc2626; }
+    .btn-cancel  { background: #2a2a2a; color: #ddd; }
+    .btn-cancel:hover { background: #333; }
+
     /* ====== TOAST ====== */
     #toast {
       position: fixed; bottom: 44px; left: 50%;
@@ -390,7 +434,7 @@
   <div class="page active" id="page-game">
     <div class="top-nav">
       <!-- Logout — RED -->
-      <button class="nav-btn red" onclick="showToast('See you soon!')" title="Logout">
+      <button class="nav-btn red" onclick="openLogoutModal()" title="Logout">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           <polyline points="16 17 21 12 16 7" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -610,6 +654,25 @@
     </div>
   </div>
 
+</div>
+
+<!-- ===== LOGOUT MODAL ===== -->
+<div class="modal-overlay" id="logout-modal">
+  <div class="modal-box">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </div>
+    <div class="modal-title">Exit the application?</div>
+    <div class="modal-sub">You will have to log in again.</div>
+    <div class="modal-btns">
+      <button class="btn-signout" onclick="confirmLogout()">Sign Out</button>
+      <button class="btn-cancel"  onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -928,6 +991,24 @@
       }, i * 18);
     }
   }
+
+  // ======== LOGOUT MODAL ========
+  function openLogoutModal() {
+    document.getElementById('logout-modal').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('logout-modal').classList.remove('open');
+  }
+  function confirmLogout() {
+    closeModal();
+    // Reset session and reload page
+    localStorage.removeItem('sf2');
+    location.reload();
+  }
+  // Close modal when clicking the backdrop
+  document.getElementById('logout-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
 
   // ======== KEEP-ALIVE (prevents server sleep) ========
   setInterval(function() {
