@@ -1,140 +1,895 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SlotFruits - لعبة الفواكه</title>
-    <style>
-        body {
-            background-color: #1a1a1a;
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            background: #333;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .slot-machine {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            background: #000;
-            padding: 20px;
-            border-radius: 10px;
-            border: 5px solid #ffd700;
-        }
-        .reel {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 50px;
-            overflow: hidden;
-        }
-        button {
-            background: #ffd700;
-            border: none;
-            padding: 15px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        button:active {
-            transform: scale(0.95);
-        }
-        .balance {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #ffd700;
-        }
-        .message {
-            height: 30px;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>SlotFruits</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      min-height: 100vh;
+      background: #0a0a0a;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ====== PAGES ====== */
+    .page { display: none; flex-direction: column; min-height: 100vh; padding: 0 0 30px; }
+    .page.active { display: flex; }
+
+    /* ====== TOP NAV BAR ====== */
+    .top-nav {
+      display: flex;
+      justify-content: space-around;
+      padding: 14px 10px;
+      background: #111;
+      border-bottom: 1px solid #222;
+    }
+
+    .nav-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: #1e1e1e;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #aaa;
+      font-size: 18px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-btn:hover { background: #2a2a2a; color: #fff; }
+    .nav-btn.active-nav { background: #1a3a1a; color: #22c55e; }
+
+    /* ====== BACK HEADER ====== */
+    .back-header {
+      display: flex;
+      align-items: center;
+      padding: 16px 16px;
+      gap: 12px;
+      background: #0a0a0a;
+    }
+    .back-btn {
+      background: none; border: none; color: #fff;
+      font-size: 22px; cursor: pointer; padding: 4px;
+    }
+    .back-header h2 { font-size: 20px; font-weight: bold; }
+
+    /* ====== BALANCE ROW ====== */
+    .balance-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 24px 20px;
+    }
+    .balance-box {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .balance-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .coins-icon { background: #2a1f00; }
+    .spins-icon { background: #0a1a3a; }
+    .balance-value { font-size: 28px; font-weight: bold; }
+    .balance-value.gold { color: #f59e0b; }
+    .balance-value.white { color: #fff; }
+    .balance-label { font-size: 10px; color: #666; letter-spacing: 1px; }
+
+    /* ====== SLOT GRID ====== */
+    .slot-wrapper {
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .slot-grid {
+      width: 100%;
+      background: #111;
+      border-radius: 16px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      border: 2px solid #22c55e;
+      box-shadow: 0 0 20px rgba(34,197,94,0.15);
+    }
+
+    .slot-cell {
+      aspect-ratio: 1;
+      background: #1a1a1a;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      transition: transform 0.1s;
+      border: 1px solid #222;
+    }
+
+    .slot-cell.spinning { animation: cellSpin 0.1s infinite; }
+    .slot-cell.win { animation: winPulse 0.5s ease-in-out; border-color: #22c55e; background: #0d2a1a; }
+
+    @keyframes cellSpin {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes winPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* ====== SPIN BUTTON ====== */
+    .spin-btn {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: #0a0a0a;
+      border: 3px solid #22c55e;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(34,197,94,0.3);
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .spin-btn:active { transform: scale(0.95); }
+    .spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .spin-btn.spinning-btn {
+      animation: spinPulse 0.3s infinite alternate;
+      border-color: #f59e0b;
+      box-shadow: 0 0 20px rgba(245,158,11,0.4);
+    }
+    @keyframes spinPulse {
+      from { box-shadow: 0 0 15px rgba(34,197,94,0.3); }
+      to { box-shadow: 0 0 30px rgba(34,197,94,0.7); }
+    }
+
+    /* ====== WIN MESSAGE ====== */
+    .win-message {
+      min-height: 36px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: bold;
+      color: #22c55e;
+      padding: 8px 20px;
+      transition: opacity 0.3s;
+    }
+    .win-message.lose { color: #ef4444; }
+
+    /* ====== CARD LIST ====== */
+    .card-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+
+    .card-row {
+      background: #1a1a1a;
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid #222;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .card-row:hover { background: #222; }
+
+    .card-row-left { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+    .card-row-icon { font-size: 20px; }
+
+    /* ====== TOGGLE ====== */
+    .toggle {
+      width: 48px; height: 26px;
+      background: #22c55e;
+      border-radius: 20px;
+      position: relative;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.off { background: #444; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      top: 3px; left: 25px;
+      transition: left 0.2s;
+    }
+    .toggle.off::after { left: 3px; }
+
+    /* ====== STAT CARDS ====== */
+    .stat-card {
+      background: #1a1a1a;
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid #222;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .stat-label { font-size: 12px; color: #666; }
+    .stat-value { font-size: 26px; font-weight: bold; }
+
+    .copy-row {
+      background: #1a1a1a;
+      border-radius: 14px;
+      padding: 14px 16px;
+      border: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .copy-row-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+    .copy-row-value { font-size: 13px; color: #fff; word-break: break-all; }
+    .copy-btn {
+      background: none; border: none;
+      color: #22c55e; font-size: 20px;
+      cursor: pointer; flex-shrink: 0; padding: 4px;
+    }
+    .copy-btn:active { transform: scale(0.9); }
+
+    /* ====== INPUT ====== */
+    .input-wrap {
+      background: #1a1a1a;
+      border-radius: 12px;
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 10px;
+    }
+    .input-wrap input {
+      background: none; border: none; outline: none;
+      color: #fff; font-size: 15px;
+      padding: 14px 0;
+      flex: 1;
+    }
+    .input-wrap input::placeholder { color: #555; }
+    .input-icon { color: #555; font-size: 18px; }
+
+    /* ====== GREEN BUTTON ====== */
+    .green-btn {
+      background: #22c55e;
+      border: none;
+      border-radius: 14px;
+      color: #000;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 16px;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .green-btn:active { transform: scale(0.98); }
+    .green-btn:hover { background: #16a34a; }
+    .green-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ====== SELECT ====== */
+    .select-wrap {
+      background: #1a1a1a;
+      border-radius: 12px;
+      border: 1px solid #333;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      position: relative;
+    }
+    .select-wrap select {
+      background: none; border: none; outline: none;
+      color: #fff; font-size: 15px;
+      width: 100%; cursor: pointer;
+      appearance: none;
+    }
+    .select-arrow { color: #555; pointer-events: none; }
+
+    /* ====== WITHDRAWAL LIST ====== */
+    .withdrawal-item {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      border: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .withdrawal-left { display: flex; flex-direction: column; gap: 4px; }
+    .withdrawal-amount { font-size: 14px; font-weight: bold; color: #f59e0b; }
+    .withdrawal-coins { font-size: 12px; color: #888; }
+    .withdrawal-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .withdrawal-status { font-size: 12px; color: #22c55e; font-weight: bold; }
+    .withdrawal-date { font-size: 11px; color: #555; }
+
+    /* ====== MAX BTN ====== */
+    .amount-row { display: flex; gap: 10px; align-items: stretch; }
+    .max-btn {
+      background: #22c55e;
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 0 18px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ====== RECEIVE ROW ====== */
+    .receive-row {
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    /* ====== SUPPORT ====== */
+    .support-text {
+      padding: 20px 24px;
+      line-height: 1.8;
+      color: #aaa;
+      font-size: 14px;
+      text-align: center;
+    }
+    .support-email {
+      color: #22c55e;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    /* ====== SECTION TITLE ====== */
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      padding: 16px 16px 8px;
+      color: #ccc;
+    }
+
+    /* ====== TOAST ====== */
+    #toast {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1a1a1a;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      border: 1px solid #333;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ====== CONFETTI ====== */
+    .confetti-piece {
+      position: fixed;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      animation: confettiFall 1s ease-in forwards;
+      pointer-events: none;
+      z-index: 998;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Referral code entry page */
+    .ref-icon { font-size: 50px; text-align: center; padding: 30px 0 10px; }
+    .ref-title { font-size: 22px; font-weight: bold; text-align: center; padding: 0 24px; }
+    .ref-subtitle {
+      text-align: center; padding: 14px 24px;
+      font-size: 14px; color: #888; line-height: 1.7;
+    }
+    .ref-subtitle span { color: #22c55e; font-weight: bold; }
+    .form-section { padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>SlotFruits</h1>
-        <div class="balance">الرصيد: <span id="balance">1000</span> نقطة</div>
-        <div class="slot-machine">
-            <div class="reel" id="reel1">🍎</div>
-            <div class="reel" id="reel2">🍇</div>
-            <div class="reel" id="reel3">🍒</div>
-        </div>
-        <button onclick="spin()">دوران!</button>
-        <div class="message" id="message"></div>
+<div class="app">
+
+  <!-- ===== PAGE: GAME ===== -->
+  <div class="page active" id="page-game">
+    <div class="top-nav">
+      <button class="nav-btn" onclick="logout()" title="Logout">&#10132;</button>
+      <button class="nav-btn" onclick="showPage('settings')" title="Settings">&#9881;</button>
+      <button class="nav-btn" onclick="showPage('support')" title="Support">&#127911;</button>
+      <button class="nav-btn" onclick="showPage('referrals')" title="Referrals">&#128101;</button>
+      <button class="nav-btn" onclick="showPage('withdrawal')" title="Withdraw">&#36;</button>
     </div>
 
-    <script>
-        const fruits = ['🍎', '🍇', '🍒', '🍋', '🍉', '💎'];
-        let balance = 1000;
+    <div class="balance-row">
+      <div class="balance-box">
+        <div class="balance-icon coins-icon">&#128176;</div>
+        <div class="balance-value gold" id="balance-display">0</div>
+        <div class="balance-label">BALANCE</div>
+      </div>
+      <div class="balance-box">
+        <div class="balance-icon spins-icon">&#127920;</div>
+        <div class="balance-value white" id="spins-display">10</div>
+        <div class="balance-label">SPINS</div>
+      </div>
+    </div>
 
-        function spin() {
-            if (balance < 10) {
-                document.getElementById('message').innerText = 'رصيدك غير كافٍ!';
-                return;
-            }
+    <div class="slot-wrapper">
+      <div class="slot-grid" id="slot-grid">
+        <div class="slot-cell" id="c0">&#127817;</div>
+        <div class="slot-cell" id="c1">&#128276;</div>
+        <div class="slot-cell" id="c2">&#128142;</div>
+        <div class="slot-cell" id="c3">&#128142;</div>
+        <div class="slot-cell" id="c4">&#128142;</div>
+        <div class="slot-cell" id="c5">&#10084;</div>
+        <div class="slot-cell" id="c6">&#127826;</div>
+        <div class="slot-cell" id="c7">&#127819;</div>
+        <div class="slot-cell" id="c8">&#127819;</div>
+      </div>
 
-            balance -= 10;
-            updateUI();
-            
-            document.getElementById('message').innerText = 'جاري الدوران...';
-            
-            let count = 0;
-            const interval = setInterval(() => {
-                document.getElementById('reel1').innerText = fruits[Math.floor(Math.random() * fruits.length)];
-                document.getElementById('reel2').innerText = fruits[Math.floor(Math.random() * fruits.length)];
-                document.getElementById('reel3').innerText = fruits[Math.floor(Math.random() * fruits.length)];
-                count++;
-                
-                if (count > 20) {
-                    clearInterval(interval);
-                    checkWin();
-                }
-            }, 50);
-        }
+      <button class="spin-btn" id="spin-btn" onclick="doSpin()">SPIN</button>
 
-        function checkWin() {
-            const r1 = document.getElementById('reel1').innerText;
-            const r2 = document.getElementById('reel2').innerText;
-            const r3 = document.getElementById('reel3').innerText;
+      <div class="win-message" id="win-msg"></div>
+    </div>
+  </div>
 
-            if (r1 === r2 && r2 === r3) {
-                let win = 100;
-                if (r1 === '💎') win = 500;
-                balance += win;
-                document.getElementById('message').innerText = `مبروك! لقد ربحت ${win} نقطة! 🎉`;
-                document.getElementById('message').style.color = '#ffd700';
-            } else if (r1 === r2 || r2 === r3 || r1 === r3) {
-                balance += 20;
-                document.getElementById('message').innerText = 'ربح بسيط! +20 نقطة';
-                document.getElementById('message').style.color = '#4caf50';
-            } else {
-                document.getElementById('message').innerText = 'حظاً موفقاً في المرة القادمة!';
-                document.getElementById('message').style.color = '#ff4444';
-            }
-            updateUI();
-        }
+  <!-- ===== PAGE: SETTINGS ===== -->
+  <div class="page" id="page-settings">
+    <div class="back-header">
+      <button class="back-btn" onclick="showPage('game')">&#8592;</button>
+      <h2>&#9881; Settings</h2>
+    </div>
+    <div class="card-list">
+      <div class="card-row" onclick="toggleSound()">
+        <div class="card-row-left">
+          <span class="card-row-icon">&#128266;</span>
+          <span>Sound</span>
+        </div>
+        <button class="toggle" id="sound-toggle"></button>
+      </div>
+      <div class="card-row" onclick="showPage('ref-code')">
+        <div class="card-row-left">
+          <span class="card-row-icon">&#127873;</span>
+          <span>Reference Code</span>
+        </div>
+        <span style="color:#555">&#10095;</span>
+      </div>
+      <div class="card-row" onclick="showPage('support')">
+        <div class="card-row-left">
+          <span class="card-row-icon">&#10067;</span>
+          <span>Support</span>
+        </div>
+        <span style="color:#555">&#10095;</span>
+      </div>
+    </div>
+  </div>
 
-        function updateUI() {
-            document.getElementById('balance').innerText = balance;
-        }
-    </script>
+  <!-- ===== PAGE: REFERENCE CODE ===== -->
+  <div class="page" id="page-ref-code">
+    <div class="back-header">
+      <button class="back-btn" onclick="showPage('settings')">&#8592;</button>
+    </div>
+    <div class="ref-icon">&#127873;</div>
+    <div class="ref-title">Reference Code</div>
+    <div class="ref-subtitle">
+      If you were referred by a friend, enter the referral code below to get
+      <span>50 free spins</span> on the game! &#127881;
+    </div>
+    <div class="form-section">
+      <div class="input-wrap">
+        <span class="input-icon">&#128273;</span>
+        <input type="text" id="ref-input" placeholder="Enter code here" />
+      </div>
+      <button class="green-btn" onclick="applyReferral()">&#127873; Send Code</button>
+      <div id="ref-msg" style="text-align:center;font-size:13px;color:#888;min-height:20px"></div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE: REFERRALS ===== -->
+  <div class="page" id="page-referrals">
+    <div class="back-header">
+      <button class="back-btn" onclick="showPage('game')">&#8592;</button>
+      <h2>Your Referrals</h2>
+    </div>
+    <div class="card-list">
+      <div class="stat-card">
+        <div class="stat-label">Total Referrals</div>
+        <div class="stat-value" id="ref-total">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Earned</div>
+        <div class="stat-value">
+          <span id="ref-earned">0</span> &#128184;
+        </div>
+      </div>
+      <div class="copy-row">
+        <div>
+          <div class="copy-row-label">Your Referral Link</div>
+          <div class="copy-row-value" id="ref-link">—</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('ref-link')">&#128203;</button>
+      </div>
+      <div class="copy-row">
+        <div>
+          <div class="copy-row-label">Your Code</div>
+          <div class="copy-row-value" id="ref-code-display">—</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('ref-code-display')">&#128203;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE: WITHDRAWAL ===== -->
+  <div class="page" id="page-withdrawal">
+    <div class="back-header">
+      <button class="back-btn" onclick="showPage('game')">&#8592;</button>
+      <h2>Withdrawal</h2>
+    </div>
+    <div class="form-section">
+      <div class="input-wrap">
+        <input type="email" id="w-email" placeholder="Your FaucetPay Email" />
+      </div>
+      <div class="select-wrap">
+        <select id="w-currency" onchange="updateReceive()">
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="TRX">TRON (TRX)</option>
+          <option value="SOL">Solana (SOL)</option>
+        </select>
+        <span class="select-arrow">&#9660;</span>
+      </div>
+      <div class="amount-row">
+        <button class="max-btn" onclick="setMax()">MAX</button>
+        <div class="input-wrap" style="flex:1">
+          <input type="number" id="w-amount" placeholder="Amount" oninput="updateReceive()" min="1" />
+        </div>
+      </div>
+      <div class="receive-row" id="receive-display">To Receive: 0.00000000 BTC</div>
+      <button class="green-btn" onclick="doWithdraw()">Withdraw</button>
+      <div id="w-msg" style="text-align:center;font-size:13px;color:#888;min-height:20px"></div>
+
+      <div class="section-title">Latest Withdrawals</div>
+      <div id="withdrawal-list" style="display:flex;flex-direction:column;gap:8px">
+        <div style="text-align:center;color:#555;padding:20px;font-size:13px">No withdrawals yet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE: SUPPORT ===== -->
+  <div class="page" id="page-support">
+    <div class="back-header">
+      <button class="back-btn" onclick="showPage('game')">&#8592;</button>
+      <h2>Support</h2>
+    </div>
+    <div class="support-text">
+      <p>If you have any questions, please contact us.<br>
+      We accept suggestions to better serve you,<br>
+      and we will respond as soon as possible.</p>
+      <br>
+      <p>&#128231; <a class="support-email" href="mailto:contact@slotfruits.com">contact@slotfruits.com</a></p>
+      <br>
+      <p>Your messages will be replied within 48 hours.</p>
+      <br>
+      <p>At the moment, we can provide only English support. Messages sent in other languages will not be replied.</p>
+      <br>
+      <p>Please try to explain the issues you're experiencing as clearly and detailed as possible. Avoid short or vague messages.</p>
+      <br>
+      <p>We do not answer questions that have already been addressed in our FAQ.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // ====== STATE ======
+  const SYMBOLS = ['🍉','🔔','💎','❤️','🍒','🍋','🍇','⭐','🎯'];
+  const RATES = { BTC: 0.000000025, TRX: 0.001, SOL: 0.00005 };
+  const WIN_COMBOS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const COIN_REWARDS = { '💎':500,'⭐':300,'🎯':250,'🔔':200,'❤️':150,'🍉':100,'🍒':80,'🍋':60,'🍇':50 };
+
+  let state = JSON.parse(localStorage.getItem('slotfruits') || 'null') || {
+    coins: 0,
+    spins: 10,
+    totalSpins: 0,
+    totalWins: 0,
+    sound: true,
+    referralCode: generateCode(),
+    usedReferral: false,
+    referrals: 0,
+    withdrawals: []
+  };
+
+  function saveState() { localStorage.setItem('slotfruits', JSON.stringify(state)); }
+
+  function generateCode() {
+    return Math.random().toString(36).substr(2,8).toUpperCase() + Math.random().toString(36).substr(2,8).toUpperCase();
+  }
+
+  // ====== UI ======
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    if (name === 'game') updateGameUI();
+    if (name === 'referrals') updateReferralsUI();
+    if (name === 'withdrawal') updateWithdrawalUI();
+    if (name === 'settings') updateSettingsUI();
+    window.scrollTo(0, 0);
+  }
+
+  function updateGameUI() {
+    document.getElementById('balance-display').textContent = state.coins.toLocaleString();
+    document.getElementById('spins-display').textContent = state.spins;
+  }
+
+  function updateSettingsUI() {
+    const t = document.getElementById('sound-toggle');
+    t.className = 'toggle' + (state.sound ? '' : ' off');
+  }
+
+  function updateReferralsUI() {
+    const domain = window.location.hostname || 'slotfruits.com';
+    document.getElementById('ref-total').textContent = state.referrals;
+    document.getElementById('ref-earned').textContent = state.referrals * 50;
+    document.getElementById('ref-link').textContent = `https://${domain}/r/${state.referralCode}`;
+    document.getElementById('ref-code-display').textContent = state.referralCode;
+  }
+
+  function updateWithdrawalUI() {
+    const list = document.getElementById('withdrawal-list');
+    if (state.withdrawals.length === 0) {
+      list.innerHTML = '<div style="text-align:center;color:#555;padding:20px;font-size:13px">No withdrawals yet</div>';
+      return;
+    }
+    list.innerHTML = state.withdrawals.slice().reverse().map(w => `
+      <div class="withdrawal-item">
+        <div class="withdrawal-left">
+          <div class="withdrawal-amount">&#9851; ${w.amount} ${w.currency}</div>
+          <div class="withdrawal-coins">${w.coins.toLocaleString()} &#128184;</div>
+        </div>
+        <div class="withdrawal-right">
+          <div class="withdrawal-status">Complete</div>
+          <div class="withdrawal-date">${w.date}</div>
+        </div>
+      </div>
+    `).join('');
+    updateReceive();
+  }
+
+  // ====== SPIN ======
+  let spinning = false;
+
+  function doSpin() {
+    if (spinning) return;
+    if (state.spins <= 0) { showToast('No spins left! Apply a referral code to get more.'); return; }
+
+    spinning = true;
+    const btn = document.getElementById('spin-btn');
+    btn.disabled = true;
+    btn.classList.add('spinning-btn');
+    btn.textContent = '...';
+
+    state.spins--;
+    state.totalSpins++;
+    saveState();
+    updateGameUI();
+
+    // Animate cells
+    for (let i = 0; i < 9; i++) {
+      document.getElementById('c' + i).classList.add('spinning');
+    }
+
+    let ticks = 0;
+    const maxTicks = 20 + Math.floor(Math.random() * 10);
+    const grid = [];
+
+    const interval = setInterval(() => {
+      for (let i = 0; i < 9; i++) {
+        const sym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+        document.getElementById('c' + i).textContent = sym;
+        if (ticks === maxTicks - 1) grid[i] = sym;
+      }
+      ticks++;
+      if (ticks >= maxTicks) {
+        clearInterval(interval);
+        finalizeSpin(grid);
+      }
+    }, 60);
+  }
+
+  function finalizeSpin(grid) {
+    for (let i = 0; i < 9; i++) {
+      document.getElementById('c' + i).classList.remove('spinning');
+    }
+
+    let won = false;
+    let coinsEarned = 0;
+    let msg = '';
+    let winCells = [];
+
+    for (const combo of WIN_COMBOS) {
+      const [a, b, c] = combo;
+      if (grid[a] && grid[a] === grid[b] && grid[b] === grid[c]) {
+        won = true;
+        const reward = COIN_REWARDS[grid[a]] || 50;
+        coinsEarned += reward;
+        msg = `${grid[a]} x3 — You won ${reward} coins!`;
+        winCells = [a, b, c];
+        break;
+      }
+    }
+
+    if (won) {
+      state.coins += coinsEarned;
+      state.totalWins++;
+      winCells.forEach(i => document.getElementById('c' + i).classList.add('win'));
+      setTimeout(() => winCells.forEach(i => document.getElementById('c' + i).classList.remove('win')), 600);
+      showConfetti();
+      document.getElementById('win-msg').className = 'win-message';
+      document.getElementById('win-msg').textContent = msg;
+    } else {
+      document.getElementById('win-msg').className = 'win-message lose';
+      document.getElementById('win-msg').textContent = 'Try again!';
+    }
+
+    saveState();
+    updateGameUI();
+
+    setTimeout(() => {
+      const btn = document.getElementById('spin-btn');
+      btn.disabled = false;
+      btn.classList.remove('spinning-btn');
+      btn.textContent = 'SPIN';
+      spinning = false;
+    }, 300);
+  }
+
+  // ====== SOUND ======
+  function toggleSound() {
+    state.sound = !state.sound;
+    saveState();
+    updateSettingsUI();
+    showToast(state.sound ? 'Sound On' : 'Sound Off');
+  }
+
+  // ====== REFERRAL ======
+  function applyReferral() {
+    const code = document.getElementById('ref-input').value.trim().toUpperCase();
+    const msg = document.getElementById('ref-msg');
+    if (!code) { msg.style.color='#ef4444'; msg.textContent = 'Please enter a code.'; return; }
+    if (state.usedReferral) { msg.style.color='#ef4444'; msg.textContent = 'You already used a referral code.'; return; }
+    if (code === state.referralCode) { msg.style.color='#ef4444'; msg.textContent = 'You cannot use your own code.'; return; }
+
+    // Accept any valid-length code
+    if (code.length < 8) { msg.style.color='#ef4444'; msg.textContent = 'Invalid code.'; return; }
+
+    state.spins += 50;
+    state.usedReferral = true;
+    saveState();
+    updateGameUI();
+    msg.style.color = '#22c55e';
+    msg.textContent = 'Code applied! You got 50 free spins!';
+    document.getElementById('ref-input').value = '';
+    showConfetti();
+    setTimeout(() => showPage('game'), 1500);
+  }
+
+  // ====== WITHDRAWAL ======
+  function setMax() {
+    document.getElementById('w-amount').value = state.coins;
+    updateReceive();
+  }
+
+  function updateReceive() {
+    const currency = document.getElementById('w-currency').value;
+    const amount = parseInt(document.getElementById('w-amount').value) || 0;
+    const rate = RATES[currency] || 0.000000025;
+    const crypto = (amount * rate).toFixed(8);
+    document.getElementById('receive-display').textContent = `To Receive: ${crypto} ${currency}`;
+  }
+
+  function doWithdraw() {
+    const email = document.getElementById('w-email').value.trim();
+    const currency = document.getElementById('w-currency').value;
+    const amount = parseInt(document.getElementById('w-amount').value) || 0;
+    const msg = document.getElementById('w-msg');
+
+    if (!email || !email.includes('@')) { msg.style.color='#ef4444'; msg.textContent = 'Enter a valid FaucetPay email.'; return; }
+    if (amount < 100) { msg.style.color='#ef4444'; msg.textContent = 'Minimum withdrawal is 100 coins.'; return; }
+    if (amount > state.coins) { msg.style.color='#ef4444'; msg.textContent = 'Insufficient coins.'; return; }
+
+    const rate = RATES[currency] || 0.000000025;
+    const crypto = (amount * rate).toFixed(8);
+    const date = new Date().toISOString().split('T')[0];
+
+    state.coins -= amount;
+    state.withdrawals.push({ amount: crypto, currency, coins: amount, date, status: 'complete' });
+    saveState();
+    updateGameUI();
+    updateWithdrawalUI();
+
+    msg.style.color = '#22c55e';
+    msg.textContent = 'Withdrawal submitted successfully!';
+    document.getElementById('w-amount').value = '';
+    updateReceive();
+    showToast('Withdrawal requested!');
+  }
+
+  // ====== COPY ======
+  function copyText(id) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('Copied!')).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); showToast('Copied!');
+    });
+  }
+
+  // ====== TOAST ======
+  let toastTimer;
+  function showToast(text) {
+    const t = document.getElementById('toast');
+    t.textContent = text;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // ====== CONFETTI ======
+  function showConfetti() {
+    const colors = ['#22c55e','#f59e0b','#3b82f6','#ef4444','#8b5cf6'];
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        c.style.cssText = `
+          left:${Math.random()*100}vw;
+          top:-10px;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          animation-duration:${0.8+Math.random()*0.6}s;
+          animation-delay:${Math.random()*0.3}s;
+          width:${6+Math.random()*8}px;
+          height:${6+Math.random()*8}px;
+        `;
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 1500);
+      }, i * 20);
+    }
+  }
+
+  // ====== LOGOUT ======
+  function logout() {
+    showToast('Come back soon!');
+  }
+
+  // ====== INIT ======
+  updateGameUI();
+  updateSettingsUI();
+</script>
 </body>
 </html>
