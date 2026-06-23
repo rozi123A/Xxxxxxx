@@ -847,6 +847,11 @@
     }
   }
 
+  // ======== KEEP-ALIVE (prevents server sleep) ========
+  setInterval(function() {
+    fetch(window.location.href, { method: 'HEAD', cache: 'no-store' }).catch(function(){});
+  }, 270000); // ping every 4.5 minutes
+
   // ======== INIT ========
   renderGame();
   renderSettings();
