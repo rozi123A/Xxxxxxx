@@ -794,21 +794,41 @@
   const CONFETTI_COLORS = ['#39d353','#f5a623','#3b82f6','#ec4899','#a855f7','#f97316'];
 
   let S = null;
-  let SAVE_KEY = 'sf2';
+  let CURRENT_EMAIL = null;
 
   function userKey(email) { return 'sf2_' + email.replace(/[^a-z0-9]/gi, '_'); }
 
-  function initUserData(email) {
-    SAVE_KEY = userKey(email);
-    const stored = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
-    S = stored || {
+  async function initUserData(email) {
+    CURRENT_EMAIL = email;
+    // Try loading from server first
+    try {
+      const res = await fetch('/api/user-data?email=' + encodeURIComponent(email));
+      const json = await res.json();
+      if (json.found && json.data) {
+        S = json.data;
+        localStorage.setItem(userKey(email), JSON.stringify(S));
+        return;
+      }
+    } catch(e) {}
+    // Fallback: localStorage
+    const local = JSON.parse(localStorage.getItem(userKey(email)) || 'null');
+    S = local || {
       coins: 0, spins: 10, totalSpins: 0, totalWins: 0,
       sound: true, usedRef: false, referrals: 0,
       code: rand16(), withdrawals: []
     };
   }
 
-  function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }
+  function save() {
+    if (!S || !CURRENT_EMAIL) return;
+    localStorage.setItem(userKey(CURRENT_EMAIL), JSON.stringify(S));
+    // Also save to server (fire and forget)
+    fetch('/api/user-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: CURRENT_EMAIL, data: S })
+    }).catch(() => {});
+  }
   function rand16() { return (Math.random().toString(36).slice(2,10) + Math.random().toString(36).slice(2,10)).toUpperCase(); }
 
   // ======== PAGES ========
@@ -1170,7 +1190,7 @@
 
       if (data.valid) {
         localStorage.setItem('sf2_user', JSON.stringify({ method: 'faucetpay', email }));
-        initUserData(email);
+        await initUserData(email);
         S.fpEmail = email;
         save();
         closeFPModal();
@@ -1187,11 +1207,11 @@
       btn.textContent = 'Continue →';
     }
   }
-  function signInGoogle() {
+  async function signInGoogle() {
     const email = prompt('Enter your Google email address:');
     if (!email || !email.includes('@')) return;
     localStorage.setItem('sf2_user', JSON.stringify({ method: 'google', email }));
-    initUserData(email);
+    await initUserData(email);
     showPage('game');
   }
   function isLoggedIn() {
@@ -1199,14 +1219,16 @@
   }
 
   // ======== INIT ========
-  if (isLoggedIn()) {
-    const storedUser = JSON.parse(localStorage.getItem('sf2_user') || 'null');
-    if (storedUser && storedUser.email) {
-      initUserData(storedUser.email);
+  (async () => {
+    if (isLoggedIn()) {
+      const storedUser = JSON.parse(localStorage.getItem('sf2_user') || 'null');
+      if (storedUser && storedUser.email) {
+        await initUserData(storedUser.email);
+      }
+      showPage('game');
     }
-    showPage('game');
-  }
-  // (login page is shown by default via .active class)
+    // (login page is shown by default via .active class)
+  })();
 </script>
 </body>
 </html>
