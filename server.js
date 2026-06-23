@@ -1,21 +1,39 @@
 const express = require('express');
 const path = require('path');
-const app = express();
+const { Pool } = require('pg');
 
+const app = express();
 app.use(express.json());
 app.use(express.static(__dirname));
 
+// ======== DATABASE ========
+const pool = process.env.DATABASE_URL ? new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+}) : null;
+
+async function setupDb() {
+  if (!pool) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS user_data (
+      email TEXT PRIMARY KEY,
+      data JSONB NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  console.log('Database ready');
+}
+setupDb().catch(e => console.error('DB setup error:', e.message));
+
+// ======== API: FaucetPay verify ========
 app.post('/api/check-faucetpay', async (req, res) => {
   const { email } = req.body;
-
-  if (!email || !email.includes('@')) {
+  if (!email || !email.includes('@'))
     return res.status(400).json({ valid: false, message: 'Invalid email format' });
-  }
 
   const apiKey = process.env.FAUCETPAY_API_KEY;
-  if (!apiKey) {
+  if (!apiKey)
     return res.status(500).json({ valid: false, message: 'API key not configured' });
-  }
 
   try {
     const params = new URLSearchParams({ api_key: apiKey, address: email });
@@ -24,16 +42,50 @@ app.post('/api/check-faucetpay', async (req, res) => {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString()
     });
-
     const data = await response.json();
-
-    if (data.status === 200) {
+    if (data.status === 200)
       res.json({ valid: true, message: 'Account found' });
-    } else {
+    else
       res.json({ valid: false, message: 'No FaucetPay account found for this email.' });
-    }
-  } catch (e) {
+  } catch {
     res.status(502).json({ valid: false, message: 'Could not reach FaucetPay. Try again.' });
+  }
+});
+
+// ======== API: Load user data ========
+app.get('/api/user-data', async (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ found: false });
+
+  if (!pool) return res.json({ found: false });
+
+  try {
+    const result = await pool.query('SELECT data FROM user_data WHERE email = $1', [email]);
+    if (result.rows.length > 0)
+      res.json({ found: true, data: result.rows[0].data });
+    else
+      res.json({ found: false });
+  } catch (e) {
+    res.status(500).json({ found: false, error: e.message });
+  }
+});
+
+// ======== API: Save user data ========
+app.post('/api/user-data', async (req, res) => {
+  const { email, data } = req.body;
+  if (!email || !data) return res.status(400).json({ ok: false });
+
+  if (!pool) return res.json({ ok: false, reason: 'No database' });
+
+  try {
+    await pool.query(
+      `INSERT INTO user_data (email, data) VALUES ($1, $2)
+       ON CONFLICT (email) DO UPDATE SET data = $2, updated_at = NOW()`,
+      [email, JSON.stringify(data)]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
   }
 });
 
