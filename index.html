@@ -50,18 +50,23 @@
     }
 
     .nav-btn {
-      width: 46px; height: 46px;
+      width: 48px; height: 48px;
       border-radius: 50%;
-      background: var(--surface);
+      background: #1c1c1c;
       border: none;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      color: #bbb;
-      font-size: 17px;
+      font-size: 20px;
       transition: all 0.2s;
+      flex-shrink: 0;
     }
-    .nav-btn:hover { background: var(--surface2); color: #fff; }
-    .nav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .nav-btn:hover { background: #272727; }
+    .nav-btn svg { width: 22px; height: 22px; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-btn.red  svg { stroke: #ef4444; }
+    .nav-btn.yellow svg { stroke: #f59e0b; }
+    .nav-btn.gray  svg { stroke: #94a3b8; }
+    .nav-btn.blue  svg { stroke: #3b82f6; fill: rgba(59,130,246,0.15); }
+    .nav-btn.green svg { stroke: #39d353; }
 
     /* ====== BACK HEADER ====== */
     .back-header {
@@ -384,25 +389,44 @@
   <!-- ===== GAME PAGE ===== -->
   <div class="page active" id="page-game">
     <div class="top-nav">
-      <!-- Logout -->
-      <button class="nav-btn" onclick="showToast('See you soon!')" title="Logout">
-        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <!-- Logout — RED -->
+      <button class="nav-btn red" onclick="showToast('See you soon!')" title="Logout">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="16 17 21 12 16 7" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="21" y1="12" x2="9" y2="12" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
       </button>
-      <!-- Settings -->
-      <button class="nav-btn" onclick="showPage('settings')" title="Settings">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <!-- Settings — YELLOW -->
+      <button class="nav-btn yellow" onclick="showPage('settings')" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="3" stroke="#f59e0b" stroke-width="2.2"/>
+          <path stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
       </button>
-      <!-- Support -->
-      <button class="nav-btn" onclick="showPage('support')" title="Support">
-        <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      <!-- Support — GRAY headset -->
+      <button class="nav-btn gray" onclick="showPage('support')" title="Support">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
-      <!-- Referrals -->
-      <button class="nav-btn" onclick="showPage('referrals')" title="Referrals">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <!-- Referrals — BLUE -->
+      <button class="nav-btn blue" onclick="showPage('referrals')" title="Referrals">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9" cy="7" r="4" stroke="#3b82f6" stroke-width="2.2"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
-      <!-- Withdraw -->
-      <button class="nav-btn" onclick="showPage('withdrawal')" title="Withdraw">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <!-- Withdraw — GREEN dollar -->
+      <button class="nav-btn green" onclick="showPage('withdrawal')" title="Withdraw">
+        <svg viewBox="0 0 24 24" fill="none">
+          <line x1="12" y1="1" x2="12" y2="23" stroke="#39d353" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="#39d353" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
     </div>
 
