@@ -583,20 +583,30 @@
       <button class="back-btn" onclick="showPage('game')">&#8592;</button>
       <h2>Support</h2>
     </div>
-    <div class="support-body">
-      <p>If you have any questions, please contact us.<br>
-      We accept suggestions to better serve you,<br>
-      and we will respond as soon as possible.</p>
-      <br>
-      <p>&#128231; <a class="support-email" href="mailto:contact@slotfruits.com">contact@slotfruits.com</a></p>
-      <br>
-      <p>Your messages will be replied within 48 hours.</p>
-      <br>
-      <p>At the moment, we can provide only English support.<br>Messages sent in other languages will not be replied.</p>
-      <br>
-      <p>Please explain your issue clearly and in detail.<br>Avoid short or vague messages.</p>
-      <br>
-      <p>We do not answer questions already addressed in our FAQ.</p>
+    <div class="form-section">
+      <p style="color:#888;font-size:14px;line-height:1.8;text-align:center;padding:0 4px 10px">
+        Fill in the form below and your message will be sent directly to us. We reply within 48 hours.
+      </p>
+      <div class="input-wrap">
+        <span class="input-icon">&#128100;</span>
+        <input type="text" id="s-name" placeholder="Your name" />
+      </div>
+      <div class="input-wrap">
+        <span class="input-icon">&#128231;</span>
+        <input type="email" id="s-email" placeholder="Your email" />
+      </div>
+      <div style="background:var(--surface);border-radius:13px;border:1px solid var(--border);padding:14px 16px;">
+        <textarea id="s-msg" rows="5" placeholder="Describe your issue in detail..."
+          style="background:none;border:none;outline:none;color:#fff;font-size:15px;width:100%;resize:none;font-family:inherit;"></textarea>
+      </div>
+      <button class="green-btn" onclick="sendSupport()">&#128231; Send Message</button>
+      <div class="feedback" id="s-feedback"></div>
+      <div style="text-align:center;padding:14px 0 4px;font-size:12px;color:#555;">
+        Or email us directly at<br>
+        <a href="mailto:khaledmar12091987@gmail.com" style="color:#39d353;font-weight:700;text-decoration:none;">
+          khaledmar12091987@gmail.com
+        </a>
+      </div>
     </div>
   </div>
 
@@ -687,6 +697,7 @@
     S.totalSpins++;
     save();
     renderGame();
+    playSpinSound();
 
     for (let i = 0; i < 9; i++) document.getElementById('c' + i).classList.add('rolling');
 
@@ -724,10 +735,12 @@
       S.totalWins++;
       winIdx.forEach(i => document.getElementById('c' + i).classList.add('win'));
       setTimeout(() => winIdx.forEach(i => document.getElementById('c' + i).classList.remove('win')), 700);
+      playWinSound();
       burst();
       document.getElementById('win-msg').className = 'win-msg';
       document.getElementById('win-msg').textContent = msg;
     } else {
+      playLoseSound();
       document.getElementById('win-msg').className = 'win-msg lose';
       document.getElementById('win-msg').textContent = 'Better luck next time!';
     }
@@ -744,12 +757,81 @@
     }, 350);
   }
 
-  // ======== SOUND ========
+  // ======== SOUND ENGINE ========
+  let _ctx = null;
+  function getCtx() {
+    if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_ctx.state === 'suspended') _ctx.resume();
+    return _ctx;
+  }
+
+  function playTone(freq, type, dur, vol, decay) {
+    if (!S.sound) return;
+    try {
+      const ctx = getCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(vol || 0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (dur || 0.3));
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + (dur || 0.3));
+    } catch(e) {}
+  }
+
+  function playSpinSound() {
+    if (!S.sound) return;
+    let i = 0;
+    const iv = setInterval(() => {
+      playTone(200 + Math.random() * 300, 'square', 0.07, 0.08);
+      if (++i > 18) clearInterval(iv);
+    }, 80);
+  }
+
+  function playWinSound() {
+    if (!S.sound) return;
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.25, 0.25), i * 110));
+  }
+
+  function playLoseSound() {
+    if (!S.sound) return;
+    playTone(220, 'sawtooth', 0.3, 0.15);
+    setTimeout(() => playTone(180, 'sawtooth', 0.3, 0.1), 160);
+  }
+
   function toggleSound() {
     S.sound = !S.sound;
     save();
     renderSettings();
-    showToast(S.sound ? 'Sound On' : 'Sound Off');
+    showToast(S.sound ? 'Sound On 🔊' : 'Sound Off 🔇');
+  }
+
+  // ======== SUPPORT SEND ========
+  function sendSupport() {
+    const name = document.getElementById('s-name').value.trim();
+    const email = document.getElementById('s-email').value.trim();
+    const msg  = document.getElementById('s-msg').value.trim();
+    const fb   = document.getElementById('s-feedback');
+    const fail = t => { fb.style.color = '#e74c3c'; fb.textContent = t; };
+    const ok   = t => { fb.style.color = '#39d353'; fb.textContent = t; };
+
+    if (!name)  return fail('Please enter your name.');
+    if (!email.includes('@')) return fail('Please enter a valid email.');
+    if (msg.length < 10) return fail('Please describe your issue (min 10 chars).');
+
+    const subject = encodeURIComponent('SlotFruits Support — ' + name);
+    const body    = encodeURIComponent(
+      'Name: ' + name + '\nEmail: ' + email + '\n\nMessage:\n' + msg
+    );
+    window.location.href = 'mailto:khaledmar12091987@gmail.com?subject=' + subject + '&body=' + body;
+
+    ok('Opening your email app... ✅');
+    document.getElementById('s-name').value = '';
+    document.getElementById('s-email').value = '';
+    document.getElementById('s-msg').value = '';
   }
 
   // ======== REFERRAL ========
