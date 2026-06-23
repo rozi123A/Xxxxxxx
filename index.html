@@ -793,13 +793,22 @@
   const REWARDS = {'💎':500,'⭐':300,'🎯':250,'🔔':200,'❤️':150,'🍉':100,'🍒':80,'🍋':60,'🍇':50};
   const CONFETTI_COLORS = ['#39d353','#f5a623','#3b82f6','#ec4899','#a855f7','#f97316'];
 
-  let S = JSON.parse(localStorage.getItem('sf2') || 'null') || {
-    coins: 0, spins: 10, totalSpins: 0, totalWins: 0,
-    sound: true, usedRef: false, referrals: 0,
-    code: rand16(), withdrawals: []
-  };
+  let S = null;
+  let SAVE_KEY = 'sf2';
 
-  function save() { localStorage.setItem('sf2', JSON.stringify(S)); }
+  function userKey(email) { return 'sf2_' + email.replace(/[^a-z0-9]/gi, '_'); }
+
+  function initUserData(email) {
+    SAVE_KEY = userKey(email);
+    const stored = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    S = stored || {
+      coins: 0, spins: 10, totalSpins: 0, totalWins: 0,
+      sound: true, usedRef: false, referrals: 0,
+      code: rand16(), withdrawals: []
+    };
+  }
+
+  function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }
   function rand16() { return (Math.random().toString(36).slice(2,10) + Math.random().toString(36).slice(2,10)).toUpperCase(); }
 
   // ======== PAGES ========
@@ -1110,8 +1119,8 @@
   function confirmLogout() {
     closeModal();
     // Reset session and reload page
-    localStorage.removeItem('sf2');
     localStorage.removeItem('sf2_user');
+    // Game data kept per-user key, not deleted
     location.reload();
   }
   // Close modal when clicking the backdrop
@@ -1161,6 +1170,7 @@
 
       if (data.valid) {
         localStorage.setItem('sf2_user', JSON.stringify({ method: 'faucetpay', email }));
+        initUserData(email);
         S.fpEmail = email;
         save();
         closeFPModal();
@@ -1181,6 +1191,7 @@
     const email = prompt('Enter your Google email address:');
     if (!email || !email.includes('@')) return;
     localStorage.setItem('sf2_user', JSON.stringify({ method: 'google', email }));
+    initUserData(email);
     showPage('game');
   }
   function isLoggedIn() {
@@ -1189,6 +1200,10 @@
 
   // ======== INIT ========
   if (isLoggedIn()) {
+    const storedUser = JSON.parse(localStorage.getItem('sf2_user') || 'null');
+    if (storedUser && storedUser.email) {
+      initUserData(storedUser.email);
+    }
     showPage('game');
   }
   // (login page is shown by default via .active class)
