@@ -43,7 +43,7 @@
       bottom: 0; left: 50%;
       transform: translateX(-50%);
       width: 100%; max-width: 430px;
-      height: 60px;
+      height: 80px;
       background: #111;
       border-top: 1px solid #333;
       display: flex; align-items: center; justify-content: center;
@@ -61,10 +61,10 @@
       → لا يمكن رياضياً لأي عنصر أن يدخل في منطقة الإعلان
     */
     #page-game {
-      height: calc(100vh - 60px);   /* كل الشاشة ناقص الإعلان */
       min-height: unset;
-      padding-bottom: 0;
-      overflow: hidden;
+      height: auto;
+      padding-bottom: 120px;
+      overflow: visible;
       position: relative;
       z-index: 1;
     }
@@ -74,9 +74,8 @@
       flex-direction: column;
       justify-content: center;
       align-items: stretch;
-      padding: 8px 16px 16px;
+      padding: 8px 16px 0;
       gap: 14px;
-      min-height: 0;   /* ضروري لـ flex children */
     }
 
     /* ====== TOP NAV ====== */
@@ -201,9 +200,10 @@
       box-shadow: 0 0 0 1px rgba(57,211,83,0.2), 0 0 24px rgba(57,211,83,0.3);
       transition: all 0.15s;
       display: flex; align-items: center; justify-content: center;
-      /* مسافة أمان من الإعلان: لا يُمس أبداً */
-      margin-bottom: 20px;
+      margin-bottom: 120px;
       flex-shrink: 0;
+      position: relative;
+      z-index: 10;
     }
     .spin-btn:active:not(:disabled) { transform: scale(0.94); }
     .spin-btn:disabled { opacity: 0.45; cursor: not-allowed; }
