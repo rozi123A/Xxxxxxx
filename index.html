@@ -37,6 +37,7 @@
     }
 
     /* ====== AD BANNER ====== */
+    /* الإعلان ثابت في الأسفل — لا يتحرك أبداً */
     .ad-banner {
       position: fixed;
       bottom: 0; left: 50%;
@@ -44,24 +45,28 @@
       width: 100%; max-width: 430px;
       height: 60px;
       background: #111;
-      border-top: 1px solid #222;
+      border-top: 1px solid #333;
       display: flex; align-items: center; justify-content: center;
-      z-index: 100;
+      z-index: 999;
     }
 
     /* ====== PAGES ====== */
     .page { display: none; flex-direction: column; min-height: 100vh; padding-bottom: 80px; }
     .page.active { display: flex; }
 
-    /* ====== GAME PAGE LAYOUT (احترافي) ====== */
-    /* --ad-h: ارتفاع الإعلان الثابت */
-    :root { --ad-h: 60px; --ad-safe: 120px; }
-
+    /* ====== GAME PAGE — الحل النهائي ====== */
+    /*
+      الفكرة: الصفحة تأخذ (100vh - 60px) بالضبط
+      → الإعلان يجلس في الـ 60px الأخيرة
+      → لا يمكن رياضياً لأي عنصر أن يدخل في منطقة الإعلان
+    */
     #page-game {
-      height: 100vh;
+      height: calc(100vh - 60px);   /* كل الشاشة ناقص الإعلان */
       min-height: unset;
-      padding-bottom: var(--ad-safe);
-      overflow: visible;
+      padding-bottom: 0;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
     }
     .game-area {
       flex: 1;
@@ -69,9 +74,9 @@
       flex-direction: column;
       justify-content: center;
       align-items: stretch;
-      padding: 12px 16px 0;
-      gap: 12px;
-      overflow: visible;
+      padding: 8px 16px 16px;
+      gap: 14px;
+      min-height: 0;   /* ضروري لـ flex children */
     }
 
     /* ====== TOP NAV ====== */
