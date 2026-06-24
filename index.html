@@ -1141,11 +1141,12 @@
     document.getElementById('receive-txt').textContent = `To Receive: ${r} ${cur}`;
   }
 
-  function doWithdraw() {
+  async function doWithdraw() {
     const email = document.getElementById('w-email').value.trim();
     const cur   = document.getElementById('w-currency').value;
     const coins = parseInt(document.getElementById('w-amount').value) || 0;
     const el    = document.getElementById('w-msg');
+    const btn   = document.querySelector('#page-withdrawal .green-btn');
     const fail  = (t) => { el.style.color = '#e74c3c'; el.textContent = t; };
     const ok    = (t) => { el.style.color = '#39d353'; el.textContent = t; };
 
@@ -1154,15 +1155,38 @@
     if (coins > S.coins) return fail('Insufficient coins.');
 
     const amt = (coins * (RATES[cur] || 0.000000025)).toFixed(8);
-    const date = new Date().toISOString().split('T')[0];
-    S.coins -= coins;
-    S.withdrawals.push({ amt, cur, coins, date });
-    save();
-    renderGame();
-    renderWithdrawal();
-    document.getElementById('w-amount').value = '';
-    ok('Withdrawal submitted!');
-    showToast('Withdrawal requested!');
+    
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    fail('Sending request to FaucetPay...');
+
+    try {
+      const res = await fetch('/api/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, amount: amt, currency: cur })
+      });
+      const json = await res.json();
+
+      if (json.ok) {
+        const date = new Date().toISOString().split('T')[0];
+        S.coins -= coins;
+        S.withdrawals.push({ amt, cur, coins, date });
+        save();
+        renderGame();
+        renderWithdrawal();
+        document.getElementById('w-amount').value = '';
+        ok('Withdrawal successful! Check your FaucetPay.');
+        showToast('Success!');
+      } else {
+        fail('Error: ' + json.error);
+      }
+    } catch (e) {
+      fail('Network error. Try again.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Withdraw Now';
+    }
   }
 
   // ======== COPY ========

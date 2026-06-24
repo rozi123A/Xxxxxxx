@@ -89,6 +89,42 @@ app.post('/api/user-data', async (req, res) => {
   }
 });
 
+// ======== API: Withdrawal via FaucetPay ========
+app.post('/api/withdraw', async (req, res) => {
+  const { email, amount, currency } = req.body;
+  const apiKey = process.env.FAUCETPAY_API_KEY;
+
+  if (!apiKey) return res.status(500).json({ ok: false, error: 'API key not configured' });
+  if (!email || !amount || !currency) return res.status(400).json({ ok: false, error: 'Missing parameters' });
+
+  try {
+    // FaucetPay Send API requires amount in satoshis for some coins or decimal for others
+    // We'll send it as the provided amount
+    const params = new URLSearchParams({
+      api_key: apiKey,
+      amount: amount,
+      currency: currency,
+      to: email,
+      referral: 'false'
+    });
+
+    const response = await fetch('https://faucetpay.io/api/v1/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+
+    const result = await response.json();
+    if (result.status === 200) {
+      res.json({ ok: true, message: result.message });
+    } else {
+      res.status(400).json({ ok: false, error: result.message || 'FaucetPay error' });
+    }
+  } catch (e) {
+    res.status(502).json({ ok: false, error: 'Failed to connect to FaucetPay' });
+  }
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
