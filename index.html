@@ -862,23 +862,36 @@
 
   async function initUserData(email) {
     CURRENT_EMAIL = email;
+    const today = new Date().toISOString().split('T')[0];
+    
     // Try loading from server first
     try {
       const res = await fetch('/api/user-data?email=' + encodeURIComponent(email));
       const json = await res.json();
       if (json.found && json.data) {
         S = json.data;
-        localStorage.setItem(userKey(email), JSON.stringify(S));
-        return;
       }
     } catch(e) {}
-    // Fallback: localStorage
-    const local = JSON.parse(localStorage.getItem(userKey(email)) || 'null');
-    S = local || {
-      coins: 0, spins: 10, totalSpins: 0, totalWins: 0,
-      sound: true, usedRef: false, referrals: 0,
-      code: rand16(), withdrawals: []
-    };
+
+    // Fallback: localStorage if server fails
+    if (!S) {
+      const local = JSON.parse(localStorage.getItem(userKey(email)) || 'null');
+      S = local || {
+        coins: 0, spins: 20, totalSpins: 0, totalWins: 0,
+        sound: true, usedRef: false, referrals: 0,
+        code: rand16(), withdrawals: [], lastDaily: ''
+      };
+    }
+
+    // Daily Spins Logic: If today is different from lastDaily, reset spins to 20
+    if (S.lastDaily !== today) {
+      S.spins = 20;
+      S.lastDaily = today;
+      save();
+      showToast('Daily 20 spins added! 🎁');
+    }
+
+    localStorage.setItem(userKey(email), JSON.stringify(S));
   }
 
   function save() {
