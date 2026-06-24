@@ -100,12 +100,13 @@ app.post('/api/withdraw', async (req, res) => {
   try {
     // FaucetPay Send API requires amount in satoshis for some coins or decimal for others
     // We'll send it as the provided amount
-    // Ensure amount is a string and formatted correctly (8 decimal places)
-    const formattedAmount = parseFloat(amount).toFixed(8);
+    // FaucetPay API requires amount in SATOSHIS (amount * 10^8)
+    // We convert the decimal amount back to an integer satoshi value
+    const satoshiAmount = Math.round(parseFloat(amount) * 100000000);
 
     const params = new URLSearchParams({
       api_key: apiKey,
-      amount: formattedAmount,
+      amount: satoshiAmount,
       currency: currency,
       to: email,
       referral: 'false'
