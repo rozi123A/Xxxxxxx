@@ -859,6 +859,15 @@
   }
   function renderWithdrawal() {
     updateReceive();
+    // Auto-fill email from logged-in account (but keep editable)
+    try {
+      const userStr = localStorage.getItem('sf2_user');
+      const emailInput = document.getElementById('w-email');
+      if (userStr && emailInput && !emailInput.value) {
+        const user = JSON.parse(userStr);
+        if (user.email) emailInput.value = user.email;
+      }
+    } catch(e) {}
     const list = document.getElementById('w-list');
     if (!S.withdrawals.length) {
       list.innerHTML = '<p style="text-align:center;color:#444;padding:20px;font-size:13px">No withdrawals yet</p>';
