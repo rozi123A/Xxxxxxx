@@ -36,8 +36,21 @@
       position: relative;
     }
 
+    /* ====== AD BANNER ====== */
+    .ad-banner {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      height: 60px;
+      background: #111;
+      border-top: 1px solid #222;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+
     /* ====== PAGES ====== */
-    .page { display: none; flex-direction: column; min-height: 100vh; padding-bottom: 40px; }
+    .page { display: none; flex-direction: column; min-height: 100vh; padding-bottom: 80px; }
     .page.active { display: flex; }
 
     /* ====== TOP NAV ====== */
@@ -136,10 +149,10 @@
       0%,100% { transform: scale(1); }
       50% { transform: scale(1.12); }
     }
-    .slot-cell.rolling { animation: roll 0.08s infinite alternate; }
+    .slot-cell.rolling { animation: roll 0.12s infinite alternate; }
     @keyframes roll {
-      from { transform: scaleY(0.85); opacity: 0.7; }
-      to { transform: scaleY(1); opacity: 1; }
+      from { opacity: 0.5; filter: blur(1px); }
+      to   { opacity: 1;   filter: blur(0px); }
     }
 
     /* ====== SPIN BUTTON ====== */
@@ -1212,5 +1225,12 @@
     // (login page is shown by default via .active class)
   })();
 </script>
+
+<!-- ===== AD BANNER ===== -->
+<div class="ad-banner">
+  <!-- ضع كود الإعلان هنا عند التسجيل في AdSense -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
+</div>
+
 </body>
 </html>
