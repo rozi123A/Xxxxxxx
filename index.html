@@ -554,21 +554,8 @@
       background: transparent;
     }
 
-    /* ===== إجبار كل إعلانات Monetag على الأسفل ===== */
-    body > *:not(.app):not(#bottom-ad-wrap):not(script):not(style):not(noscript) {
-      position: fixed !important;
-      top: auto !important;
-      bottom: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      transform: none !important;
-      margin: 0 !important;
-    }
-    .mpn-wrap, [class*="mpn-"], [class*="push-notif"], [id*="adzone"],
-    [class*="push"], [class*="notif"], [class*="toast"], [class*="alert"],
-    [class*="dialog"], [class*="popup"], [class*="banner"] {
+    /* ===== إجبار إعلانات Monetag على الأسفل ===== */
+    .mpn-wrap, [class*="mpn-"], [class*="push-notif"], [id*="adzone"] {
       top: auto !important;
       bottom: 0 !important;
       left: 0 !important;
@@ -1402,80 +1389,73 @@
 
 <script>
 (function() {
-  var SKIP = { APP: true, 'BOTTOM-AD-WRAP': true, SCRIPT: true, STYLE: true, NOSCRIPT: true };
+  // عناصر التطبيق الأصلية — لا نمسّها أبداً
+  var APP_IDS = new Set(['logout-modal','toast','bottom-ad-wrap','fp-modal']);
+  var APP_CLASSES = new Set(['app','modal-overlay','fp-modal']);
+
   var locked = new WeakSet();
+
+  function isAppElement(el) {
+    if (!el || el.nodeType !== 1) return true;
+    if (APP_IDS.has(el.id)) return true;
+    if (el.classList) {
+      for (var i = 0; i < el.classList.length; i++) {
+        if (APP_CLASSES.has(el.classList[i])) return true;
+      }
+    }
+    if (el.closest && el.closest('.app, .modal-overlay, .fp-modal')) return true;
+    return false;
+  }
 
   function forceBottom(el) {
     if (locked.has(el)) return;
+    if (isAppElement(el)) return;
     locked.add(el);
 
-    // تطبيق القيم فوراً
-    el.style.setProperty('position', 'fixed',  'important');
-    el.style.setProperty('top',      'auto',   'important');
-    el.style.setProperty('bottom',   '0',      'important');
-    el.style.setProperty('left',     '0',      'important');
-    el.style.setProperty('right',    '0',      'important');
-    el.style.setProperty('width',    '100%',   'important');
-    el.style.setProperty('max-width','100%',   'important');
-    el.style.setProperty('transform','none',   'important');
-    el.style.setProperty('margin',   '0',      'important');
+    el.style.setProperty('position',   'fixed', 'important');
+    el.style.setProperty('top',        'auto',  'important');
+    el.style.setProperty('bottom',     '0',     'important');
+    el.style.setProperty('left',       '0',     'important');
+    el.style.setProperty('right',      '0',     'important');
+    el.style.setProperty('width',      '100%',  'important');
+    el.style.setProperty('max-width',  '100%',  'important');
+    el.style.setProperty('transform',  'none',  'important');
+    el.style.setProperty('margin',     '0',     'important');
 
-    // مراقبة أي تعديل على الـ style لإعادة تطبيق القيم
+    // منع الإعلان من تغيير موضعه مرة أخرى
     var styleObs = new MutationObserver(function() {
+      if (isAppElement(el)) return;
       el.style.setProperty('top',    'auto', 'important');
       el.style.setProperty('bottom', '0',    'important');
-      el.style.setProperty('left',   '0',    'important');
-      el.style.setProperty('right',  '0',    'important');
     });
     styleObs.observe(el, { attributes: true, attributeFilter: ['style'] });
   }
 
-  function processEl(el) {
-    if (el.nodeType !== 1) return;
-    var id = (el.id || '').toUpperCase();
-    var tag = el.tagName;
-    if (SKIP[tag] || SKIP[id]) return;
-    if (el.classList && el.classList.contains('app')) return;
-    forceBottom(el);
-  }
+  // حفظ العناصر الأصلية قبل تحميل الإعلانات
+  var originalEls = new Set();
+  document.querySelectorAll('body > *').forEach(function(el) { originalEls.add(el); });
 
-  // تطبيق على العناصر الموجودة مسبقاً
-  document.querySelectorAll('body > *').forEach(processEl);
-
-  // مراقبة أي عنصر جديد يُضاف إلى body
+  // مراقبة العناصر الجديدة التي تُحقنها شبكة الإعلانات فقط
   var obs = new MutationObserver(function(muts) {
     muts.forEach(function(m) {
       m.addedNodes.forEach(function(n) {
-        processEl(n);
-        // أيضاً العناصر الفرعية (بعض الشبكات تحقن داخل div)
-        if (n.querySelectorAll) {
-          n.querySelectorAll('*').forEach(function(child) {
-            var cs = window.getComputedStyle(child);
-            if (cs.position === 'fixed' && parseInt(cs.top) < 200) {
-              forceBottom(child);
-            }
-          });
-        }
+        if (n.nodeType !== 1) return;
+        if (originalEls.has(n)) return;       // عنصر أصلي — تجاهله
+        if (isAppElement(n)) return;           // عنصر تطبيق — تجاهله
+        setTimeout(function() { forceBottom(n); }, 50);
       });
     });
   });
-  obs.observe(document.body, { childList: true, subtree: true });
+  obs.observe(document.body, { childList: true, subtree: false });
 
-  // فحص دوري احتياطي
+  // فحص دوري للعناصر الجديدة فقط (ليس الأصلية)
   setInterval(function() {
-    document.querySelectorAll('body > *').forEach(processEl);
-    // فحص أي عنصر fixed في الأعلى
-    document.querySelectorAll('*').forEach(function(el) {
-      if (el.closest && el.closest('.app')) return;
-      var cs = window.getComputedStyle(el);
-      if (cs.position === 'fixed') {
-        var top = parseInt(cs.top);
-        if (!isNaN(top) && top < 300) {
-          forceBottom(el);
-        }
-      }
+    document.querySelectorAll('body > *').forEach(function(el) {
+      if (originalEls.has(el)) return;
+      if (isAppElement(el)) return;
+      forceBottom(el);
     });
-  }, 200);
+  }, 300);
 })();
 </script>
 
