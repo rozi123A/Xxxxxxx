@@ -1065,25 +1065,69 @@
     } catch(e) {}
   }
 
+  function playCoinClink(freq, vol) {
+    if (!S.sound) return;
+    try {
+      const ctx = getCtx();
+      // Primary metallic ring
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.connect(gain1); gain1.connect(ctx.destination);
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain1.gain.setValueAtTime(vol || 0.18, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      osc1.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + 0.18);
+      // Harmonic overtone for richness
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 2.76, ctx.currentTime);
+      gain2.gain.setValueAtTime((vol || 0.18) * 0.4, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc2.start(ctx.currentTime);
+      osc2.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+  }
+
   function playSpinSound() {
     if (!S.sound) return;
-    let i = 0;
-    const iv = setInterval(() => {
-      playTone(200 + Math.random() * 300, 'square', 0.07, 0.08);
-      if (++i > 18) clearInterval(iv);
-    }, 80);
+    // Metallic coin rolling — rapid ticks getting faster then slowing
+    const delays = [];
+    let t = 0;
+    for (let i = 0; i < 22; i++) {
+      delays.push(t);
+      t += Math.max(30, 90 - i * 2.5);
+    }
+    delays.forEach(d => {
+      setTimeout(() => {
+        const freq = 900 + Math.random() * 700;
+        playCoinClink(freq, 0.07 + Math.random() * 0.05);
+      }, d);
+    });
   }
 
   function playWinSound() {
     if (!S.sound) return;
-    const notes = [523, 659, 784, 1047];
-    notes.forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.25, 0.25), i * 110));
+    // Cascade of coins pouring — staggered metallic clinks
+    const coinTimes  = [0, 50, 100, 140, 175, 210, 255, 300, 350, 405, 465, 530, 600, 675, 755];
+    const coinFreqs  = [1400, 1600, 1250, 1750, 1350, 1550, 1200, 1650, 1450, 1300, 1700, 1150, 1500, 1250, 1600];
+    coinTimes.forEach((t, i) => {
+      setTimeout(() => playCoinClink(coinFreqs[i], 0.18 + Math.random() * 0.08), t);
+    });
+    // Triumphant fanfare after the coin shower
+    const fanfare = [784, 988, 1175, 1568];
+    fanfare.forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.22, 0.18), 820 + i * 90));
   }
 
   function playLoseSound() {
     if (!S.sound) return;
-    playTone(220, 'sawtooth', 0.3, 0.15);
-    setTimeout(() => playTone(180, 'sawtooth', 0.3, 0.1), 160);
+    // Single coin dropped — clink then silence
+    playCoinClink(700, 0.15);
+    setTimeout(() => playCoinClink(500, 0.09), 140);
+    setTimeout(() => playTone(260, 'sine', 0.35, 0.07), 300);
   }
 
   function toggleSound() {
