@@ -1386,30 +1386,43 @@
 </div>
 
 <script>
-// يراقب أي إعلان يظهر في الأعلى ويحوّله للأسفل تلقائياً
 (function() {
-  function moveAdToBottom(el) {
-    var s = window.getComputedStyle(el);
-    if (s.position === 'fixed' && parseInt(s.top) >= 0 && parseInt(s.top) < 150) {
-      el.style.setProperty('top', 'auto', 'important');
-      el.style.setProperty('bottom', '0', 'important');
-    }
+  var locked = new WeakSet();
+
+  function lockToBottom(el) {
+    if (locked.has(el)) return;
+    locked.add(el);
+    // تجميد موضع العنصر عند الأسفل
+    var orig = el.style.setProperty.bind(el.style);
+    el.style.setProperty = function(p, v, pri) {
+      if (p === 'top') { orig('top','auto','important'); orig('bottom','0','important'); return; }
+      orig(p, v, pri);
+    };
+    el.style.setProperty('top', 'auto', 'important');
+    el.style.setProperty('bottom', '0', 'important');
   }
-  var observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(m) {
-      m.addedNodes.forEach(function(node) {
-        if (node.nodeType === 1) {
-          moveAdToBottom(node);
-          node.querySelectorAll && node.querySelectorAll('*').forEach(moveAdToBottom);
+
+  function check() {
+    document.querySelectorAll('body > *').forEach(function(el) {
+      if (!el.className || !el.className.includes || el.className.includes('app')) return;
+      var r = el.getBoundingClientRect();
+      if (r.top >= 0 && r.top < 160 && r.height > 30 && r.width > 100) {
+        lockToBottom(el);
+      }
+    });
+  }
+
+  var obs = new MutationObserver(function(muts) {
+    muts.forEach(function(m) {
+      m.addedNodes.forEach(function(n) {
+        if (n.nodeType === 1 && n.tagName !== 'SCRIPT' && n.tagName !== 'STYLE') {
+          setTimeout(function() { check(); }, 100);
         }
       });
     });
   });
-  observer.observe(document.body, { childList: true, subtree: true });
-  // تحقق من العناصر الموجودة كل ثانية
-  setInterval(function() {
-    document.querySelectorAll('body > *').forEach(moveAdToBottom);
-  }, 1000);
+  obs.observe(document.body, { childList: true, subtree: false });
+  setInterval(check, 300);
 })();
 </script>
 
