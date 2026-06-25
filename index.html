@@ -554,10 +554,26 @@
       background: transparent;
     }
 
-    /* إجبار إعلانات Monetag على الأسفل بدلاً من الأعلى */
-    .mpn-wrap, [class*="mpn-"], [class*="push-notif"], [id*="adzone"] {
+    /* ===== إجبار كل إعلانات Monetag على الأسفل ===== */
+    body > *:not(.app):not(#bottom-ad-wrap):not(script):not(style):not(noscript) {
+      position: fixed !important;
       top: auto !important;
       bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      transform: none !important;
+      margin: 0 !important;
+    }
+    .mpn-wrap, [class*="mpn-"], [class*="push-notif"], [id*="adzone"],
+    [class*="push"], [class*="notif"], [class*="toast"], [class*="alert"],
+    [class*="dialog"], [class*="popup"], [class*="banner"] {
+      top: auto !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      transform: none !important;
     }
   </style>
 </head>
@@ -1386,42 +1402,80 @@
 
 <script>
 (function() {
+  var SKIP = { APP: true, 'BOTTOM-AD-WRAP': true, SCRIPT: true, STYLE: true, NOSCRIPT: true };
   var locked = new WeakSet();
 
-  function lockToBottom(el) {
+  function forceBottom(el) {
     if (locked.has(el)) return;
     locked.add(el);
-    // تجميد موضع العنصر عند الأسفل
-    var orig = el.style.setProperty.bind(el.style);
-    el.style.setProperty = function(p, v, pri) {
-      if (p === 'top') { orig('top','auto','important'); orig('bottom','0','important'); return; }
-      orig(p, v, pri);
-    };
-    el.style.setProperty('top', 'auto', 'important');
-    el.style.setProperty('bottom', '0', 'important');
-  }
 
-  function check() {
-    document.querySelectorAll('body > *').forEach(function(el) {
-      if (!el.className || !el.className.includes || el.className.includes('app')) return;
-      var r = el.getBoundingClientRect();
-      if (r.top >= 0 && r.top < 160 && r.height > 30 && r.width > 100) {
-        lockToBottom(el);
-      }
+    // تطبيق القيم فوراً
+    el.style.setProperty('position', 'fixed',  'important');
+    el.style.setProperty('top',      'auto',   'important');
+    el.style.setProperty('bottom',   '0',      'important');
+    el.style.setProperty('left',     '0',      'important');
+    el.style.setProperty('right',    '0',      'important');
+    el.style.setProperty('width',    '100%',   'important');
+    el.style.setProperty('max-width','100%',   'important');
+    el.style.setProperty('transform','none',   'important');
+    el.style.setProperty('margin',   '0',      'important');
+
+    // مراقبة أي تعديل على الـ style لإعادة تطبيق القيم
+    var styleObs = new MutationObserver(function() {
+      el.style.setProperty('top',    'auto', 'important');
+      el.style.setProperty('bottom', '0',    'important');
+      el.style.setProperty('left',   '0',    'important');
+      el.style.setProperty('right',  '0',    'important');
     });
+    styleObs.observe(el, { attributes: true, attributeFilter: ['style'] });
   }
 
+  function processEl(el) {
+    if (el.nodeType !== 1) return;
+    var id = (el.id || '').toUpperCase();
+    var tag = el.tagName;
+    if (SKIP[tag] || SKIP[id]) return;
+    if (el.classList && el.classList.contains('app')) return;
+    forceBottom(el);
+  }
+
+  // تطبيق على العناصر الموجودة مسبقاً
+  document.querySelectorAll('body > *').forEach(processEl);
+
+  // مراقبة أي عنصر جديد يُضاف إلى body
   var obs = new MutationObserver(function(muts) {
     muts.forEach(function(m) {
       m.addedNodes.forEach(function(n) {
-        if (n.nodeType === 1 && n.tagName !== 'SCRIPT' && n.tagName !== 'STYLE') {
-          setTimeout(function() { check(); }, 100);
+        processEl(n);
+        // أيضاً العناصر الفرعية (بعض الشبكات تحقن داخل div)
+        if (n.querySelectorAll) {
+          n.querySelectorAll('*').forEach(function(child) {
+            var cs = window.getComputedStyle(child);
+            if (cs.position === 'fixed' && parseInt(cs.top) < 200) {
+              forceBottom(child);
+            }
+          });
         }
       });
     });
   });
-  obs.observe(document.body, { childList: true, subtree: false });
-  setInterval(check, 300);
+  obs.observe(document.body, { childList: true, subtree: true });
+
+  // فحص دوري احتياطي
+  setInterval(function() {
+    document.querySelectorAll('body > *').forEach(processEl);
+    // فحص أي عنصر fixed في الأعلى
+    document.querySelectorAll('*').forEach(function(el) {
+      if (el.closest && el.closest('.app')) return;
+      var cs = window.getComputedStyle(el);
+      if (cs.position === 'fixed') {
+        var top = parseInt(cs.top);
+        if (!isNaN(top) && top < 300) {
+          forceBottom(el);
+        }
+      }
+    });
+  }, 200);
 })();
 </script>
 
