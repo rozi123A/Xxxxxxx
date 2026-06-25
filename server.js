@@ -134,4 +134,14 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('Server running on port', PORT));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  
+  // Anti-sleep mechanism: Ping itself every 10 minutes
+  const siteUrl = 'https://farwit.onrender.com';
+  setInterval(() => {
+    fetch(siteUrl)
+      .then(res => console.log(`Self-ping successful: ${res.status}`))
+      .catch(err => console.error(`Self-ping failed: ${err.message}`));
+  }, 10 * 60 * 1000); // 10 minutes
+});
