@@ -1389,73 +1389,72 @@
 
 <script>
 (function() {
-  // عناصر التطبيق الأصلية — لا نمسّها أبداً
-  var APP_IDS = new Set(['logout-modal','toast','bottom-ad-wrap','fp-modal']);
-  var APP_CLASSES = new Set(['app','modal-overlay','fp-modal']);
+  // معرّفات وكلاسات التطبيق الأصلية — محظور المساس بها
+  var APP_IDS  = { 'logout-modal':1, 'toast':1, 'bottom-ad-wrap':1, 'fp-modal':1 };
+  var APP_ANCS = '.app, .modal-overlay, .fp-modal, #logout-modal, #toast, #fp-modal';
 
   var locked = new WeakSet();
 
-  function isAppElement(el) {
+  function isApp(el) {
     if (!el || el.nodeType !== 1) return true;
-    if (APP_IDS.has(el.id)) return true;
-    if (el.classList) {
-      for (var i = 0; i < el.classList.length; i++) {
-        if (APP_CLASSES.has(el.classList[i])) return true;
-      }
-    }
-    if (el.closest && el.closest('.app, .modal-overlay, .fp-modal')) return true;
+    if (APP_IDS[el.id]) return true;
+    try { if (el.closest(APP_ANCS)) return true; } catch(e) {}
     return false;
   }
 
-  function forceBottom(el) {
-    if (locked.has(el)) return;
-    if (isAppElement(el)) return;
+  function pin(el) {
+    if (locked.has(el) || isApp(el)) return;
     locked.add(el);
-
-    el.style.setProperty('position',   'fixed', 'important');
-    el.style.setProperty('top',        'auto',  'important');
-    el.style.setProperty('bottom',     '0',     'important');
-    el.style.setProperty('left',       '0',     'important');
-    el.style.setProperty('right',      '0',     'important');
-    el.style.setProperty('width',      '100%',  'important');
-    el.style.setProperty('max-width',  '100%',  'important');
-    el.style.setProperty('transform',  'none',  'important');
-    el.style.setProperty('margin',     '0',     'important');
-
-    // منع الإعلان من تغيير موضعه مرة أخرى
-    var styleObs = new MutationObserver(function() {
-      if (isAppElement(el)) return;
-      el.style.setProperty('top',    'auto', 'important');
-      el.style.setProperty('bottom', '0',    'important');
-    });
-    styleObs.observe(el, { attributes: true, attributeFilter: ['style'] });
+    function apply() {
+      el.style.setProperty('position',  'fixed', 'important');
+      el.style.setProperty('top',       'auto',  'important');
+      el.style.setProperty('bottom',    '0',     'important');
+      el.style.setProperty('left',      '0',     'important');
+      el.style.setProperty('right',     '0',     'important');
+      el.style.setProperty('width',     '100%',  'important');
+      el.style.setProperty('max-width', '100%',  'important');
+      el.style.setProperty('transform', 'none',  'important');
+      el.style.setProperty('margin',    '0',     'important');
+    }
+    apply();
+    // منع الإعلان من تغيير موضعه
+    new MutationObserver(function() {
+      if (!isApp(el)) apply();
+    }).observe(el, { attributes: true, attributeFilter: ['style'] });
   }
 
-  // حفظ العناصر الأصلية قبل تحميل الإعلانات
-  var originalEls = new Set();
-  document.querySelectorAll('body > *').forEach(function(el) { originalEls.add(el); });
+  // فحص شامل: كل عنصر fixed خارج التطبيق ينزل للأسفل
+  function sweep() {
+    try {
+      document.querySelectorAll('body *').forEach(function(el) {
+        if (isApp(el) || locked.has(el)) return;
+        var cs = window.getComputedStyle(el);
+        var t  = parseFloat(cs.top);
+        if (cs.position === 'fixed' && (isNaN(t) || t < 400)) {
+          pin(el);
+        }
+      });
+    } catch(e) {}
+  }
 
-  // مراقبة العناصر الجديدة التي تُحقنها شبكة الإعلانات فقط
-  var obs = new MutationObserver(function(muts) {
+  // مراقبة كل إضافات DOM بما فيها الفرعية
+  new MutationObserver(function(muts) {
+    var found = false;
     muts.forEach(function(m) {
       m.addedNodes.forEach(function(n) {
-        if (n.nodeType !== 1) return;
-        if (originalEls.has(n)) return;       // عنصر أصلي — تجاهله
-        if (isAppElement(n)) return;           // عنصر تطبيق — تجاهله
-        setTimeout(function() { forceBottom(n); }, 50);
+        if (n.nodeType === 1 && !isApp(n)) found = true;
       });
     });
-  });
-  obs.observe(document.body, { childList: true, subtree: false });
+    if (found) setTimeout(sweep, 120);
+  }).observe(document.body, { childList: true, subtree: true });
 
-  // فحص دوري للعناصر الجديدة فقط (ليس الأصلية)
-  setInterval(function() {
-    document.querySelectorAll('body > *').forEach(function(el) {
-      if (originalEls.has(el)) return;
-      if (isAppElement(el)) return;
-      forceBottom(el);
-    });
-  }, 300);
+  // فحص دوري كل نصف ثانية
+  setInterval(sweep, 500);
+
+  // فحص أولي بعد تحميل السكريبتات
+  setTimeout(sweep, 800);
+  setTimeout(sweep, 2000);
+  setTimeout(sweep, 4000);
 })();
 </script>
 
