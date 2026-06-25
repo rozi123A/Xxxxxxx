@@ -542,6 +542,24 @@
     .fp-input:focus { border-color: #3b82f6; }
     .fp-input::placeholder { color: #444; }
     .fp-msg { min-height: 20px; font-size: 13px; font-weight: 600; margin-bottom: 10px; text-align: center; }
+
+    /* ====== إعلان Monetag ثابت في الأسفل ====== */
+    #bottom-ad-wrap {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      min-height: 60px;
+      z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent;
+    }
+
+    /* إجبار إعلانات Monetag على الأسفل بدلاً من الأعلى */
+    .mpn-wrap, [class*="mpn-"], [class*="push-notif"], [id*="adzone"] {
+      top: auto !important;
+      bottom: 0 !important;
+    }
   </style>
 </head>
 <body>
@@ -1362,6 +1380,10 @@
   })();
 </script>
 
+<!-- ===== إعلان Monetag ثابت في الأسفل ===== -->
+<div id="bottom-ad-wrap">
+  <script src="https://quge5.com/88/tag.min.js" data-zone="253487" async data-cfasync="false"></script>
+</div>
 
 </body>
 </html>
