@@ -554,13 +554,17 @@
       background: transparent;
     }
 
-    /* ===== إجبار إعلانات Monetag على الأسفل ===== */
-    .mpn-wrap, [class*="mpn-"], [class*="push-notif"], [id*="adzone"] {
+    /* ===== إجبار كل إعلانات Monetag على الأسفل — استثناء عناصر التطبيق ===== */
+    body > *:not(.app):not(#bottom-ad-wrap):not(#logout-modal):not(#toast):not(.c-piece):not(script):not(style):not(noscript) {
+      position: fixed !important;
       top: auto !important;
       bottom: 0 !important;
       left: 0 !important;
       right: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
       transform: none !important;
+      margin: 0 !important;
     }
   </style>
 </head>
@@ -1389,16 +1393,16 @@
 
 <script>
 (function() {
-  // معرّفات وكلاسات التطبيق الأصلية — محظور المساس بها
-  var APP_IDS  = { 'logout-modal':1, 'toast':1, 'bottom-ad-wrap':1, 'fp-modal':1 };
-  var APP_ANCS = '.app, .modal-overlay, .fp-modal, #logout-modal, #toast, #fp-modal';
-
-  var locked = new WeakSet();
+  var SKIP_IDS = { 'logout-modal':1, 'toast':1, 'bottom-ad-wrap':1, 'fp-modal':1 };
+  var SKIP_CLS = { 'app':1, 'modal-overlay':1, 'fp-modal':1, 'c-piece':1 };
+  var SKIP_SEL = '.app, #logout-modal, #toast, #bottom-ad-wrap, .modal-overlay, .fp-modal, .c-piece';
+  var locked   = new WeakSet();
 
   function isApp(el) {
     if (!el || el.nodeType !== 1) return true;
-    if (APP_IDS[el.id]) return true;
-    try { if (el.closest(APP_ANCS)) return true; } catch(e) {}
+    if (SKIP_IDS[el.id]) return true;
+    if (el.classList) for (var i=0;i<el.classList.length;i++) if (SKIP_CLS[el.classList[i]]) return true;
+    try { if (el.closest(SKIP_SEL)) return true; } catch(e){}
     return false;
   }
 
@@ -1406,55 +1410,53 @@
     if (locked.has(el) || isApp(el)) return;
     locked.add(el);
     function apply() {
-      el.style.setProperty('position',  'fixed', 'important');
-      el.style.setProperty('top',       'auto',  'important');
-      el.style.setProperty('bottom',    '0',     'important');
-      el.style.setProperty('left',      '0',     'important');
-      el.style.setProperty('right',     '0',     'important');
-      el.style.setProperty('width',     '100%',  'important');
-      el.style.setProperty('max-width', '100%',  'important');
-      el.style.setProperty('transform', 'none',  'important');
-      el.style.setProperty('margin',    '0',     'important');
+      el.style.setProperty('position',  'fixed','important');
+      el.style.setProperty('top',       'auto', 'important');
+      el.style.setProperty('bottom',    '0',    'important');
+      el.style.setProperty('left',      '0',    'important');
+      el.style.setProperty('right',     '0',    'important');
+      el.style.setProperty('width',     '100%', 'important');
+      el.style.setProperty('max-width', '100%', 'important');
+      el.style.setProperty('transform', 'none', 'important');
+      el.style.setProperty('margin',    '0',    'important');
     }
     apply();
-    // منع الإعلان من تغيير موضعه
-    new MutationObserver(function() {
-      if (!isApp(el)) apply();
-    }).observe(el, { attributes: true, attributeFilter: ['style'] });
+    new MutationObserver(function(){if(!isApp(el))apply();})
+      .observe(el,{attributes:true,attributeFilter:['style']});
   }
 
-  // فحص شامل: كل عنصر fixed خارج التطبيق ينزل للأسفل
   function sweep() {
     try {
-      document.querySelectorAll('body *').forEach(function(el) {
-        if (isApp(el) || locked.has(el)) return;
-        var cs = window.getComputedStyle(el);
-        var t  = parseFloat(cs.top);
-        if (cs.position === 'fixed' && (isNaN(t) || t < 400)) {
-          pin(el);
-        }
+      // 1) كل عناصر body المباشرة غير المستثناة
+      document.querySelectorAll('body > *').forEach(function(el){
+        if(!isApp(el)) pin(el);
       });
-    } catch(e) {}
+      // 2) أي عنصر fixed يظهر في النصف العلوي من الشاشة
+      document.querySelectorAll('body *').forEach(function(el){
+        if(isApp(el)||locked.has(el)) return;
+        var cs=window.getComputedStyle(el);
+        var t=parseFloat(cs.top);
+        if(cs.position==='fixed'&&!isNaN(t)&&t<window.innerHeight/2) pin(el);
+      });
+    } catch(e){}
   }
 
-  // مراقبة كل إضافات DOM بما فيها الفرعية
-  new MutationObserver(function(muts) {
-    var found = false;
-    muts.forEach(function(m) {
-      m.addedNodes.forEach(function(n) {
-        if (n.nodeType === 1 && !isApp(n)) found = true;
+  // مراقبة كل إضافات DOM
+  new MutationObserver(function(muts){
+    var hit=false;
+    muts.forEach(function(m){
+      m.addedNodes.forEach(function(n){
+        if(n.nodeType===1&&!isApp(n)) hit=true;
       });
     });
-    if (found) setTimeout(sweep, 120);
-  }).observe(document.body, { childList: true, subtree: true });
+    if(hit) setTimeout(sweep,80);
+  }).observe(document.body,{childList:true,subtree:true});
 
-  // فحص دوري كل نصف ثانية
-  setInterval(sweep, 500);
-
-  // فحص أولي بعد تحميل السكريبتات
-  setTimeout(sweep, 800);
-  setTimeout(sweep, 2000);
-  setTimeout(sweep, 4000);
+  // فحص دوري
+  setInterval(sweep,400);
+  setTimeout(sweep,500);
+  setTimeout(sweep,1500);
+  setTimeout(sweep,3500);
 })();
 </script>
 
