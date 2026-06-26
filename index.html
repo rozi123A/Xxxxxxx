@@ -4,6 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>SlotFruits</title>
+  <script>
+  /* === اعتراض مبكر: يمنع الإعلانات من الظهور في الأعلى === */
+  (function(){
+    var S={'logout-modal':1,'toast':1,'bottom-ad-wrap':1,'fp-modal':1};
+    var C={'app':1,'modal-overlay':1,'fp-modal':1,'c-piece':1};
+    function skip(el){
+      if(!el||el.nodeType!==1)return true;
+      if(S[el.id])return true;
+      if(el.classList)for(var i=0;i<el.classList.length;i++)if(C[el.classList[i]])return true;
+      return false;
+    }
+    function pin(el){
+      if(skip(el))return;
+      var s=el.style;
+      s.setProperty('position','fixed','important');
+      s.setProperty('top','auto','important');
+      s.setProperty('bottom','0','important');
+      s.setProperty('left','0','important');
+      s.setProperty('right','0','important');
+      s.setProperty('width','100%','important');
+      s.setProperty('max-width','100%','important');
+      s.setProperty('transform','none','important');
+      s.setProperty('margin','0','important');
+      new MutationObserver(function(){
+        if(skip(el))return;
+        s.setProperty('top','auto','important');
+        s.setProperty('bottom','0','important');
+      }).observe(el,{attributes:true,attributeFilter:['style']});
+    }
+    function wrap(proto,method){
+      var orig=proto[method];
+      proto[method]=function(){
+        var r=orig.apply(this,arguments);
+        var child=arguments[0];
+        if(this===document.body&&child&&child.nodeType===1&&!skip(child)){
+          setTimeout(function(){pin(child);},0);
+          requestAnimationFrame&&requestAnimationFrame(function(){pin(child);});
+        }
+        return r;
+      };
+    }
+    wrap(Element.prototype,'appendChild');
+    wrap(Element.prototype,'insertBefore');
+    if(Element.prototype.prepend)wrap(Element.prototype,'prepend');
+  })();
+  </script>
   <meta name="monetag" content="4414ec2656e2448db2366162d71f26a2">
   <script src="https://quge5.com/88/tag.min.js" data-zone="253487" async data-cfasync="false"></script>
   <style>
